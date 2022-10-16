@@ -10,7 +10,7 @@ hosting/node_modules
 /coverage
 
 # next.js
-/.next/
+hosting/.next
 /out/
 
 # production
