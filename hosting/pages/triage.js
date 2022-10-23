@@ -16,6 +16,7 @@ import * as dayjs from 'dayjs';
 import { INPROGRESS } from '../lib/status';
 import UnitList from '../components/UnitList';
 import { getAllUnitsForProject } from '../lib/client/unit';
+import UnitDetailProvider from '../components/UnitDetail';
 
 const steps = ['review', 'adjust', 'schedule'];
 
@@ -24,6 +25,10 @@ export default function Triage({ unitsProp, topicsProp }) {
   const [topics, setTopics] = useState(topicsProp);
 
   const [activeStep, setActiveStep] = useState(0);
+
+  const updateUnits = async () => {
+    setUnits(await getAllUnitsForProject(''));
+  };
 
   const handleNext = () => {
     setActiveStep((prev) => prev + 1);
@@ -37,9 +42,9 @@ export default function Triage({ unitsProp, topicsProp }) {
     // redirect back to somewhere
   };
 
-  const handleReset = () => {
-    setActiveStep(0);
-  };
+  // const handleReset = () => {
+  //   setActiveStep(0);
+  // };
 
   return (
     <Stack component='main' spacing={2} sx={{
@@ -63,7 +68,7 @@ export default function Triage({ unitsProp, topicsProp }) {
       </Box>
 
       {activeStep === 0 &&
-        <Review units={units} topics={topics} />
+        <Review units={units} topics={topics} updateUnits={updateUnits} />
       }
 
       {activeStep === 1 &&
@@ -90,13 +95,9 @@ export default function Triage({ unitsProp, topicsProp }) {
   );
 }
 
-const Review = ({ units, topics }) => {
+const Review = ({ units, topics, updateUnits }) => {
   // const overdue = Object.values(units).filter();
   // console.log('OVERDUE:', overdue);
-
-  const updateUnits = async () => {
-    setUnits(await getAllUnitsForProject(''));
-  };
 
   const overdueFilter = (unit) => {
     return dayjs.unix(unit.dueDate).isBefore(dayjs());
@@ -115,17 +116,21 @@ const Review = ({ units, topics }) => {
           <Typography variant={'h5'}>Review</Typography>
         </Grid>
 
-
         <Grid item xs={6}>
           <Typography variant={'h6'}>Overdue</Typography>
-
-          <UnitList
-            projectId=''
-            filterFn={overdueFilter}
+          <UnitDetailProvider
             units={units}
             topics={topics}
-            update={updateUnits}
-          />
+            updateUnits={updateUnits}
+          >
+            <UnitList
+              projectId=''
+              filterFn={overdueFilter}
+              units={units}
+              topics={topics}
+              update={updateUnits}
+            />
+          </UnitDetailProvider>
 
           {/* {overdue.map(({ summary }, index) => (
             <Card key={index}>
@@ -148,7 +153,7 @@ const Review = ({ units, topics }) => {
   );
 };
 
-const Adjust = ({}) => {
+const Adjust = () => {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
       <Typography variant={'h6'}>Adjust</Typography>

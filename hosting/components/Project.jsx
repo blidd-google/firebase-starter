@@ -4,13 +4,8 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Roadmap } from './Roadmap';
 import Topics from './Topics';
-import UnitDetail from './UnitDetail';
-import {
-  createUnit,
-  deleteUnit,
-  getAllUnitsForProject,
-  putUnit,
-} from '../lib/client/unit';
+import { getAllUnitsForProject } from '../lib/client/unit';
+import UnitDetailProvider from './UnitDetail';
 
 /**
  * Main page displaying project information.
@@ -42,7 +37,6 @@ export default function Project({
     setTopics(topicsProp);
   }, [topicsProp]);
 
-  const [formId, setFormId] = useState('');
   const [topicId, setTopicId] = useState('');
 
   // this callback will pull the latest data from firestore and
@@ -51,49 +45,49 @@ export default function Project({
     setUnits(await getAllUnitsForProject(currIdProp));
   };
 
-  const handleFollowEdit = async (state) => {
-    // new followup unit
-    const id = await createUnit({
-      description: '',
-      projectId: state.projectId,
-      prevId: state.id,
-      summary: `followup: ${state.summary}`,
-      status: state.status,
-      topic: state.topic,
-    });
-    console.log('STATE', state, id);
-    await putUnit({
-      ...state,
-      nextId: id,
-    });
-    await updateUnits();
-    setFormId(id);
-  };
+  // const handleFollowEdit = async (state) => {
+  //   // new followup unit
+  //   const id = await createUnit({
+  //     description: '',
+  //     projectId: state.projectId,
+  //     prevId: state.id,
+  //     summary: `followup: ${state.summary}`,
+  //     status: state.status,
+  //     topic: state.topic,
+  //   });
+  //   console.log('STATE', state, id);
+  //   await putUnit({
+  //     ...state,
+  //     nextId: id,
+  //   });
+  //   await updateUnits();
+  //   setFormId(id);
+  // };
 
-  const handleSubmitEdit = async (state) => {
-    try {
-      await putUnit({ ...state });
-      await updateUnits();
-      setFormId('');
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // const handleSubmitEdit = async (state) => {
+  //   try {
+  //     await putUnit({ ...state });
+  //     await updateUnits();
+  //     setFormId('');
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
 
-  const handleCancelEdit = (event) => {
-    setFormId('');
-  };
+  // const handleCancelEdit = (event) => {
+  //   setFormId('');
+  // };
 
-  const handleDeleteEdit = async (id) => {
-    console.log('deleting...');
-    try {
-      await deleteUnit(id);
-      await updateUnits();
-      setFormId('');
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // const handleDeleteEdit = async (id) => {
+  //   console.log('deleting...');
+  //   try {
+  //     await deleteUnit(id);
+  //     await updateUnits();
+  //     setFormId('');
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
 
   return (
     <Box component="main" sx={{ pl: 4 }}>
@@ -115,30 +109,19 @@ export default function Project({
         </Tabs>
       </Box>
 
-      {formId !== '' && (
-        <UnitDetail
-          units={units}
-          id={formId}
-          topics={topics}
-          onSubmit={handleSubmitEdit}
-          onCancel={handleCancelEdit}
-          onDelete={handleDeleteEdit}
-          onFollow={handleFollowEdit}
-          openForm={(id) => {
-            console.log('GOING TO PREV', id);
-            setFormId(id);
-          }}
-        />
-      )}
-
       {tab === 0 && (
-        <Roadmap
-          projectId={currIdProp}
+        <UnitDetailProvider
           units={units}
           topics={topics}
           updateUnits={updateUnits}
-          openUnit={(id) => setFormId(id)}
-        />
+        >
+          <Roadmap
+            projectId={currIdProp}
+            units={units}
+            topics={topics}
+            updateUnits={updateUnits}
+          />
+        </UnitDetailProvider>
       )}
       {tab === 1 && (
         <Topics topics={topics} openTopic={(id) => setTopicId(id)} />

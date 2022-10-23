@@ -25,6 +25,7 @@ import { DesktopDatePicker } from '@mui/x-date-pickers';
 import * as dayjs from 'dayjs';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { createUnit, deleteUnit, putUnit } from '../lib/client/unit';
 import { COMPLETE } from '../lib/status';
 
 const EditFormHeader = ({ children, onClose }) => (
@@ -58,7 +59,85 @@ function getNextIdIfExists(units, id) {
   return '';
 }
 
-export default function UnitDetail({
+export default function UnitDetailProvider({
+  units,
+  topics,
+  updateUnits,
+  children,
+}) {
+  const [formId, setFormId] = useState('');
+
+  const handleFollowEdit = async (state) => {
+    // new followup unit
+    const id = await createUnit({
+      description: '',
+      projectId: state.projectId,
+      prevId: state.id,
+      summary: `followup: ${state.summary}`,
+      status: state.status,
+      topic: state.topic,
+    });
+    console.log('STATE', state, id);
+    await putUnit({
+      ...state,
+      nextId: id,
+    });
+    await updateUnits();
+    setFormId(id);
+  };
+
+  const handleSubmitEdit = async (state) => {
+    try {
+      await putUnit({ ...state });
+      await updateUnits();
+      setFormId('');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCancelEdit = (event) => {
+    setFormId('');
+  };
+
+  const handleDeleteEdit = async (id) => {
+    console.log('deleting...');
+    try {
+      await deleteUnit(id);
+      await updateUnits();
+      setFormId('');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <>
+      {formId !== '' && (
+        <UnitDetail
+          units={units}
+          id={formId}
+          topics={topics}
+          onSubmit={handleSubmitEdit}
+          onCancel={handleCancelEdit}
+          onDelete={handleDeleteEdit}
+          onFollow={handleFollowEdit}
+          openForm={(id) => {
+            setFormId(id);
+          }}
+        />
+      )}
+      <children.type
+        {...children.props}
+        openUnit={(id) => {
+          setFormId(id);
+        }}
+      />
+    </>
+  );
+}
+
+function UnitDetail({
   units,
   id,
   topics,
