@@ -33,7 +33,7 @@ import { getProjects } from '../lib/client/getProjects';
  * Checks if two lists of projects are equal.
  * @param {List} a The first list.
  * @param {List} b The second list.
- * @return {boolean} Whether the two lists are eqla.
+ * @return {boolean} Whether the two lists are equal.
  */
 function areProjectListsEqual(a, b) {
   // console.log("AB", a, b);
@@ -118,7 +118,9 @@ function Sidebar({ selected, activeProjects, backburnerProjects, onClickNew }) {
         </ListItem>
         <Divider />
         <ListItem>
-          <ListItemButton>PROJECTS</ListItemButton>
+          <Link href={'/projects/all'} passHref>
+            <ListItemButton>ALL PROJECTS</ListItemButton>
+          </Link>
         </ListItem>
         <ListItem>
           <ListItemButton onClick={onClickNew}>

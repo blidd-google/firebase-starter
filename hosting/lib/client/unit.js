@@ -41,7 +41,7 @@ export async function putUnit(data) {
     throw new Error('Failed to create unit: no status specified');
   }
 
-  console.log('DATA:', data);
+  console.log('PUT:', data);
   try {
     await setDoc(doc(db, 'units', data.id), data);
   } catch (err) {
@@ -53,9 +53,15 @@ export async function deleteUnit(id) {
   await deleteDoc(doc(db, 'units', id));
 }
 
-export async function getAllUnits(projectId) {
+export async function getAllUnitsForProject(projectId) {
   const unitsRef = collection(db, 'units');
-  const q = query(unitsRef, where('projectId', '==', projectId));
+
+  let q;
+  if (projectId === '') {
+    q = query(unitsRef);
+  } else {
+    q = query(unitsRef, where('projectId', '==', projectId));
+  }
   const snapshot = await getDocs(q);
 
   const units = {};
@@ -74,3 +80,4 @@ export async function getAllUnits(projectId) {
   console.log('GETALL:', units);
   return units;
 }
+

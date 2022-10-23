@@ -26,42 +26,33 @@ export async function getProjectData(id) {
   return projectDoc.data();
 }
 
+export async function getAllUnits() {
+  const unitCollection = db.collection('units');
+  const snapshot = await unitCollection.get();
+  const units = {};
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    units[data.id] = data;
+  });
+  return units;
+}
+
+export async function getAllTopics() {
+  const unitCollection = db.collection('topics');
+  const snapshot = await unitCollection.get();
+  const units = [];
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    units.push(data);
+  });
+  return units;
+}
+
+
 export async function getUnitsForProject(id) {
   const unitCollection = db.collection('units');
   const snapshot = await unitCollection.where('projectId', '==', id).get();
 
-  // const units = {
-  //   backlog: [],
-  //   todo: [],
-  //   inProgress: [],
-  // };
-  // snapshot.forEach((doc) => {
-  //   const data = doc.data();
-  //   switch (data.status) {
-  //     case 0:
-  //       units.backlog.push(data);
-  //       break;
-  //     case 1:
-  //       units.todo.push(data);
-  //       break;
-  //     case 2:
-  //       units.inProgress.push(data);
-  //       break;
-  //     default:
-  //       console.log('invalid status');
-  //       break;
-  //   }
-  // });
-
-  // const units = {};
-  // for (const status of statuses) {
-  //   units[status] = [];
-  // }
-  // snapshot.forEach((doc) => {
-  //   const data = doc.data();
-  //   console.log('data status', data.status);
-  //   units[data.status].push(data);
-  // });
   const units = {};
   snapshot.forEach((doc) => {
     const data = doc.data();
@@ -76,7 +67,7 @@ export async function getTopicsForProject(id) {
   const topicsRef = db.collection('topics');
   const snapshot = await topicsRef.where('projectId', '==', id).get();
   if (snapshot.docs.length === 0) {
-    return {};
+    return [];
   }
 
   const topics = {};

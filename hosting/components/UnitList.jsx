@@ -16,11 +16,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import * as dayjs from 'dayjs';
 import * as React from 'react';
 import { useState } from 'react';
 import { createUnit } from '../lib/client/unit';
 
-const UnitList = ({ projectId, status, units, topics, update, openUnit }) => {
+const UnitList = ({ projectId, filterFn, units, topics, update, openUnit }) => {
   const [displayAddForm, setDisplayAddForm] = useState(false);
   // const [displayEditForm, setDisplayEditForm] = useState('');
 
@@ -49,21 +50,8 @@ const UnitList = ({ projectId, status, units, topics, update, openUnit }) => {
     setDisplayAddForm(false);
   };
 
-  // const getParentUnit = (prevId) => {
-  //   for (const status of statuses) {
-  //     const found = units[status].find((elt) => elt.id === prevId);
-  //     if (found) {
-  //       console.log('FOUND', found);
-  //       return found;
-  //     }
-  //   }
-  //   throw new Error(`Could not find parent unit with id ${prevId}`);
-  // };
-
   // prettier-ignore
-  const unitsFiltered = Object.values(units).filter(
-      (unit) => unit.status === status,
-  );
+  const unitsFiltered = Object.values(units).filter(filterFn);
 
   return (
     <>
@@ -87,7 +75,7 @@ const UnitList = ({ projectId, status, units, topics, update, openUnit }) => {
             <AddUnitForm
               projectId={projectId}
               status={status}
-              topics={topics}
+              topics={topics ? topics : []}
               onSubmit={handleSubmitAdd}
               onCancel={handleCancelAdd}
             />
@@ -116,7 +104,10 @@ const UnitList = ({ projectId, status, units, topics, update, openUnit }) => {
   );
 };
 
-const Unit = ({ unitProps: { summary, description, topic }, onClick }) => {
+const Unit = ({
+  unitProps: { summary, description, topic, dueDate },
+  onClick,
+}) => {
   return (
     <>
       <Card>
@@ -126,6 +117,11 @@ const Unit = ({ unitProps: { summary, description, topic }, onClick }) => {
               {summary}
             </Typography>
             <Typography sx={{ fontSize: 14, mb: 1 }}>{description}</Typography>
+            {dueDate && (
+              <Typography>
+                {dayjs.unix(dueDate).format('MM/DD/YYYY')}
+              </Typography>
+            )}
             {topic && (
               <Chip
                 label={topic}
@@ -143,7 +139,7 @@ const Unit = ({ unitProps: { summary, description, topic }, onClick }) => {
 
 const AddUnitForm = ({ projectId, status, topics, onSubmit, onCancel }) => {
   const [state, setState] = useState({
-    projectId,
+    projectId: projectId || '',
     status,
     description: '',
     priority: 0,
@@ -178,6 +174,16 @@ const AddUnitForm = ({ projectId, status, topics, onSubmit, onCancel }) => {
           label="Summary"
           name="summary"
           value={state.summary}
+          onChange={handleChange}
+        />
+        <TextField
+          required
+          fullWidth
+          size="small"
+          margin="dense"
+          label="Project ID"
+          name="projectId"
+          value={state.projectId}
           onChange={handleChange}
         />
         <FormControl fullWidth size="small">

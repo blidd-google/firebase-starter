@@ -15,10 +15,14 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Slider,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
+  Typography,
 } from '@mui/material';
+import { DesktopDatePicker } from '@mui/x-date-pickers';
+import * as dayjs from 'dayjs';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { COMPLETE } from '../lib/status';
@@ -57,7 +61,6 @@ function getNextIdIfExists(units, id) {
 export default function UnitDetail({
   units,
   id,
-  projectId,
   topics,
   onSubmit,
   onCancel,
@@ -67,27 +70,31 @@ export default function UnitDetail({
 }) {
   const [state, setState] = useState({
     id: id,
-    projectId: projectId,
+    projectId: units[id].projectId,
     summary: units[id].summary,
     status: units[id].status,
     prevId: getPrevIdIfExists(units, id),
     nextId: getNextIdIfExists(units, id),
     description: units[id].description ? units[id].description : '',
     topic: units[id].topic ? units[id].topic : '',
+    dueDate: units[id].dueDate ? dayjs.unix(units[id].dueDate) : null,
+    timeEst: units[id].timeEst ? units[id].timeEst : null,
   });
 
   useEffect(() => {
     setState({
       id: id,
-      projectId: projectId,
+      projectId: units[id].projectId,
       summary: units[id].summary,
       status: units[id].status,
       prevId: getPrevIdIfExists(units, id),
       nextId: getNextIdIfExists(units, id),
       description: units[id].description ? units[id].description : '',
       topic: units[id].topic ? units[id].topic : '',
+      dueDate: units[id].dueDate ? dayjs.unix(units[id].dueDate) : null,
+      timeEst: units[id].timeEst ? units[id].timeEst : null,
     });
-  }, [id, projectId, units]);
+  }, [id, units]);
 
   const handleClickDone = (event) => {
     event.preventDefault();
@@ -100,7 +107,10 @@ export default function UnitDetail({
 
   const handleClickSave = (event) => {
     event.preventDefault();
-    onSubmit(state);
+    onSubmit({
+      ...state,
+      dueDate: state.dueDate ? state.dueDate.unix() : null,
+    });
     onCancel();
   };
 
@@ -114,10 +124,22 @@ export default function UnitDetail({
     onDelete(id);
   };
 
+  const handleClickCreateFollowup = (event) => {
+    event.preventDefault();
+    onFollow(state);
+  };
+
   const handleChange = (event) => {
     setState({
       ...state,
       [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleChangeDate = (value) => {
+    setState({
+      ...state,
+      dueDate: value,
     });
   };
 
@@ -128,11 +150,6 @@ export default function UnitDetail({
     });
   };
 
-  const handleClickCreateFollowup = (event) => {
-    event.preventDefault();
-    onFollow(state);
-  };
-
   console.log('STATE', state);
 
   return (
@@ -140,6 +157,9 @@ export default function UnitDetail({
       <EditFormHeader onClose={handleClickCancel}>Details</EditFormHeader>
       <DialogContent dividers>
         <Grid container alignItems={'center'}>
+          <Grid item xs={12}>
+            <Typography>PROJECT: {state.projectId}</Typography>
+          </Grid>
           <Grid item xs={12} sx={{ mb: 2 }}>
             <Box sx={{ display: 'flex' }} alignItems={'center'}>
               {state.prevId !== '' && (
@@ -229,6 +249,36 @@ export default function UnitDetail({
                 ;
               </Select>
             </FormControl>
+          </Grid>
+          <Grid item>
+            <DesktopDatePicker
+              label="Due Date"
+              name="dueDate"
+              inputFormat="MM/DD/YYYY"
+              value={state.dueDate}
+              onChange={handleChangeDate}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          </Grid>
+          <Grid item>
+            <Button variant="outlined" onClick={() => handleChangeDate(null)}>
+              Clear
+            </Button>
+          </Grid>
+          <Grid item xs={12}>
+            <Slider
+              label="Time Estimate"
+              name="timeEst"
+              value={state.timeEst}
+              getAriaValueText={(val) => `${val} min`}
+              valueLabelDisplay="auto"
+              defaultValue={30}
+              step={5}
+              marks
+              min={15}
+              max={60}
+              onChange={handleChange}
+            />
           </Grid>
         </Grid>
       </DialogContent>

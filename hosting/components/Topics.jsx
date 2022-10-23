@@ -1,13 +1,28 @@
-import { Card, CardContent, Grid, Typography } from '@mui/material';
+import {
+  Card,
+  CardActionArea,
+  CardContent,
+  Grid,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Typography,
+} from '@mui/material';
 import PropTypes from 'prop-types';
 import * as React from 'react';
 
-export default function Topics({ topics }) {
+export default function Topics({ topics, openTopic }) {
   return (
-    <Grid container>
-      {topics.map(({ id, name, resources }) => (
-        <Grid item key={id} xs={6} sx={{ alignContent: 'flex-start' }}>
-          <ResourceList topicId={id} topicName={name} resources={resources} />
+    <Grid container sx={{ width: 1200 }}>
+      {topics.map(({ id, name, notes, resources }) => (
+        <Grid item key={id} xs={4} sx={{ alignContent: 'flex-start', m: 1 }}>
+          <TopicCard
+            topicId={id}
+            topicName={name}
+            notes={notes}
+            onClick={() => openTopic(id)}
+          />
         </Grid>
       ))}
     </Grid>
@@ -19,19 +34,34 @@ Topics.propType = {
   topicsProp: PropTypes.array,
 };
 
-const ResourceList = ({ topicName, resources }) => {
+const TopicCard = ({ topicName, notes, resources, onClick }) => {
   return (
-    <Card sx={{ margin: 2 }}>
-      <CardContent>
-        <Typography variant={'h5'}>{topicName}</Typography>
-        <Grid container spacing={4} sx={{ mt: 1 }}>
-          {resources.map(({ name }) => (
-            <Grid item key={name} xs={6}>
-              <Typography variant={'body'}>{name}</Typography>
-            </Grid>
-          ))}
-        </Grid>
-      </CardContent>
+    <Card>
+      <CardActionArea onClick={onClick}>
+        <CardContent>
+          <Typography variant={'h4'}>{topicName}</Typography>
+          <Typography variant={'body'}>{notes}</Typography>
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton>
+                <ListItemText>Resource 1</ListItemText>
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton>
+                <ListItemText>Resource 2</ListItemText>
+              </ListItemButton>
+            </ListItem>
+          </List>
+          {/* <Grid container>
+            {resources.map(({ name }) => (
+              <Grid item key={name} xs={12}>
+                <Typography variant={'h5'}>{name}</Typography>
+              </Grid>
+            ))}
+          </Grid> */}
+        </CardContent>
+      </CardActionArea>
     </Card>
   );
 };
