@@ -1,4 +1,5 @@
 import {
+  Button,
   Card,
   CardActionArea,
   CardContent,
@@ -9,37 +10,51 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import PropTypes from 'prop-types';
+import AddIcon from '@mui/icons-material/Add';
 import * as React from 'react';
+import { useRouter } from 'next/router';
+import { createNewTopic } from '../lib/client/topic';
 
-export default function Topics({ topics, openTopic }) {
+export default function Topics({ projectId, topics }) {
+  const router = useRouter();
+
+  const handleNew = async () => {
+    const id = await createNewTopic(projectId);
+    router.push(`/projects/${projectId}/topics/${id}`);
+  };
+
   return (
     <Grid container sx={{ width: 1200 }}>
-      {topics.map(({ id, name, notes, resources }) => (
+      {topics.map(({ id, name, notes, projectId }) => (
         <Grid item key={id} xs={4} sx={{ alignContent: 'flex-start', m: 1 }}>
           <TopicCard
             topicId={id}
-            topicName={name}
+            name={name}
             notes={notes}
-            onClick={() => openTopic(id)}
+            onClick={() => {
+              router.push(`/projects/${projectId}/topics/${id}`);
+            }}
           />
         </Grid>
       ))}
+
+      {projectId && (
+        <Grid item xs={4}>
+          <Button variant="outlined" endIcon={<AddIcon />} onClick={handleNew}>
+            Add
+          </Button>
+        </Grid>
+      )}
     </Grid>
   );
 }
 
-Topics.propType = {
-  projectId: PropTypes.string,
-  topicsProp: PropTypes.array,
-};
-
-const TopicCard = ({ topicName, notes, resources, onClick }) => {
+const TopicCard = ({ name, notes, resources, onClick }) => {
   return (
     <Card>
       <CardActionArea onClick={onClick}>
         <CardContent>
-          <Typography variant={'h4'}>{topicName}</Typography>
+          <Typography variant={'h4'}>{name}</Typography>
           <Typography variant={'body'}>{notes}</Typography>
           <List>
             <ListItem disablePadding>

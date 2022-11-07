@@ -26,8 +26,9 @@ import Toolbar from '@mui/material/Toolbar';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
-import { createProject } from '../lib/client/createProject';
+import { createProject } from '../lib/client/project';
 import { getProjects } from '../lib/client/getProjects';
+import { ProjectsContext } from '../lib/context';
 
 /**
  * Checks if two lists of projects are equal.
@@ -36,7 +37,6 @@ import { getProjects } from '../lib/client/getProjects';
  * @return {boolean} Whether the two lists are equal.
  */
 function areProjectListsEqual(a, b) {
-  // console.log("AB", a, b);
   return (
     a.length === b.length && [...a].every((p, index) => p.id === b[index].id)
   );
@@ -47,12 +47,14 @@ export default function Layout({ children }) {
   const [displayForm, setDisplayForm] = useState(false);
   const router = useRouter();
 
+  const value = { projects, setProjects };
+
   const handleSubmit = async (state) => {
     try {
       const project = await createProject(state);
       setProjects(await getProjects());
       setDisplayForm(false);
-      router.push(`${project.id}`);
+      router.push(`/projects/${project.id}`);
     } catch (err) {
       console.error(err);
     }
@@ -73,20 +75,22 @@ export default function Layout({ children }) {
   }, [projects]);
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <Sidebar
-        selected={router.asPath.split('/').pop()}
-        activeProjects={projects.filter((p) => p.status === 'active')}
-        backburnerProjects={projects.filter((p) => p.status === 'backburner')}
-        onClickNew={() => setDisplayForm(true)}
-      />
-      <ProjectForm
-        open={displayForm}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-      />
-      {children}
-    </Box>
+    <ProjectsContext.Provider value={value}>
+      <Box sx={{ display: 'flex' }}>
+        <Sidebar
+          selected={router.asPath.split('/').pop()}
+          activeProjects={projects.filter((p) => p.status === 'active')}
+          backburnerProjects={projects.filter((p) => p.status === 'backburner')}
+          onClickNew={() => setDisplayForm(true)}
+        />
+        <ProjectForm
+          open={displayForm}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+        />
+        {children}
+      </Box>
+    </ProjectsContext.Provider>
   );
 }
 
@@ -114,12 +118,19 @@ function Sidebar({ selected, activeProjects, backburnerProjects, onClickNew }) {
       <Divider />
       <List>
         <ListItem>
-          <ListItemButton>OVERVIEW</ListItemButton>
+          <Link href={'/agenda'}>
+            <ListItemButton>Agenda</ListItemButton>
+          </Link>
+        </ListItem>
+        <ListItem>
+          <Link href={'/triage'} passHref>
+            <ListItemButton>Triage</ListItemButton>
+          </Link>
         </ListItem>
         <Divider />
         <ListItem>
           <Link href={'/projects/all'} passHref>
-            <ListItemButton>ALL PROJECTS</ListItemButton>
+            <ListItemButton>All Projects</ListItemButton>
           </Link>
         </ListItem>
         <ListItem>

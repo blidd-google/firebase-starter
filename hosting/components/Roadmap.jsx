@@ -1,10 +1,22 @@
-import { Container, Grid, Typography } from '@mui/material';
+import { Button, Container, Grid, Typography } from '@mui/material';
+import { createUnit } from '../lib/client/unit';
 import { BACKLOG, INPROGRESS, TODO } from '../lib/status';
 import UnitList from './UnitList';
 
 const LIST_TITLES = ['BACKLOG', 'TODO', 'IN PROGRESS'];
-
 export function Roadmap({ projectId, units, topics, updateUnits, openUnit }) {
+  const handleNew = async (event) => {
+    event.preventDefault();
+    // create empty new unit
+    const id = await createUnit({
+      projectId,
+      status: BACKLOG,
+      summary: 'untitled',
+    });
+    await updateUnits();
+    // open up unit detail dialog
+    openUnit(id);
+  };
   return (
     <Grid container>
       {[BACKLOG, TODO, INPROGRESS].map((status) => (
@@ -16,6 +28,7 @@ export function Roadmap({ projectId, units, topics, updateUnits, openUnit }) {
             <UnitList
               projectId={projectId}
               filterFn={(unit) => unit.status === status}
+              status={status}
               units={units}
               topics={topics}
               update={updateUnits}
@@ -24,6 +37,11 @@ export function Roadmap({ projectId, units, topics, updateUnits, openUnit }) {
           </Container>
         </Grid>
       ))}
+      <Grid item xs={12}>
+        <Button variant="contained" onClick={handleNew}>
+          Add Unit
+        </Button>
+      </Grid>
     </Grid>
   );
 }

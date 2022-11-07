@@ -1,5 +1,11 @@
 import { db } from '../../firebase/admin';
 
+export async function getTopicDetails(id) {
+  const doc = await db.collection('topics').doc(id).get();
+  return doc.data();
+}
+
+
 export async function getProjects() {
   const projectCollection = db.collection('projects');
   const snapshot = await projectCollection.get();
@@ -37,6 +43,17 @@ export async function getAllUnits() {
   return units;
 }
 
+export async function getAllHabits() {
+  const unitCollection = db.collection('units');
+  const snapshot = await unitCollection.where('type', '==', 'habit').get();
+  const habits = {};
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    habits[data.id] = data;
+  });
+  return habits;
+}
+
 export async function getAllTopics() {
   const unitCollection = db.collection('topics');
   const snapshot = await unitCollection.get();
@@ -53,9 +70,12 @@ export async function getUnitsForProject(id) {
   const unitCollection = db.collection('units');
   const snapshot = await unitCollection.where('projectId', '==', id).get();
 
+  console.log(id);
+
   const units = {};
   snapshot.forEach((doc) => {
     const data = doc.data();
+    console.log('data:', data);
     units[data.id] = data;
   });
 

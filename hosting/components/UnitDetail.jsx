@@ -28,21 +28,6 @@ import { useEffect, useState } from 'react';
 import { createUnit, deleteUnit, putUnit } from '../lib/client/unit';
 import { COMPLETE } from '../lib/status';
 
-const EditFormHeader = ({ children, onClose }) => (
-  <DialogTitle
-    sx={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }}
-  >
-    {children}
-    <IconButton onClick={onClose}>
-      <CloseIcon />
-    </IconButton>
-  </DialogTitle>
-);
-
 function getPrevIdIfExists(units, id) {
   const prevId = units[id].prevId;
   if (prevId && prevId.length > 0 && units[prevId]) {
@@ -58,6 +43,8 @@ function getNextIdIfExists(units, id) {
   }
   return '';
 }
+
+const unitTypes = ['cue', 'habit', 'task'];
 
 export default function UnitDetailProvider({
   units,
@@ -77,7 +64,6 @@ export default function UnitDetailProvider({
       status: state.status,
       topic: state.topic,
     });
-    console.log('STATE', state, id);
     await putUnit({
       ...state,
       nextId: id,
@@ -147,6 +133,14 @@ function UnitDetail({
   onFollow,
   openForm,
 }) {
+  const dateToUnix = (date) => {
+    return date ? date.unix() : null;
+  };
+
+  const unixToDate = (epoch) => {
+    return epoch ? dayjs.unix(epoch) : null;
+  };
+
   const [state, setState] = useState({
     id: id,
     projectId: units[id].projectId,
@@ -154,24 +148,28 @@ function UnitDetail({
     status: units[id].status,
     prevId: getPrevIdIfExists(units, id),
     nextId: getNextIdIfExists(units, id),
-    description: units[id].description ? units[id].description : '',
-    topic: units[id].topic ? units[id].topic : '',
-    dueDate: units[id].dueDate ? dayjs.unix(units[id].dueDate) : null,
-    timeEst: units[id].timeEst ? units[id].timeEst : null,
+    description: units[id].description || '',
+    topic: units[id].topic || '',
+    dueDate: unixToDate(units[id].dueDate),
+    timeEst: units[id].timeEst || null,
+    type: units[id].type || 'task',
+    schedule: units[id].schedule || [],
   });
 
   useEffect(() => {
     setState({
       id: id,
+      type: units[id].type || 'task',
       projectId: units[id].projectId,
       summary: units[id].summary,
       status: units[id].status,
       prevId: getPrevIdIfExists(units, id),
       nextId: getNextIdIfExists(units, id),
-      description: units[id].description ? units[id].description : '',
-      topic: units[id].topic ? units[id].topic : '',
-      dueDate: units[id].dueDate ? dayjs.unix(units[id].dueDate) : null,
-      timeEst: units[id].timeEst ? units[id].timeEst : null,
+      description: units[id].description || '',
+      topic: units[id].topic || '',
+      dueDate: unixToDate(units[id].dueDate),
+      timeEst: units[id].timeEst || null,
+      schedule: units[id].schedule || [],
     });
   }, [id, units]);
 
@@ -179,6 +177,8 @@ function UnitDetail({
     event.preventDefault();
     onSubmit({
       ...state,
+      dueDate: dateToUnix(state.dueDate),
+      doneDate: dateToUnix(dayjs()),
       status: COMPLETE,
     });
     onCancel();
@@ -188,7 +188,7 @@ function UnitDetail({
     event.preventDefault();
     onSubmit({
       ...state,
-      dueDate: state.dueDate ? state.dueDate.unix() : null,
+      dueDate: dateToUnix(state.dueDate),
     });
     onCancel();
   };
@@ -205,7 +205,10 @@ function UnitDetail({
 
   const handleClickCreateFollowup = (event) => {
     event.preventDefault();
-    onFollow(state);
+    onFollow({
+      ...state,
+      dueDate: dateToUnix(state.dueDate),
+    });
   };
 
   const handleChange = (event) => {
@@ -229,11 +232,16 @@ function UnitDetail({
     });
   };
 
-  console.log('STATE', state);
+  const handleChangeSchedule = (event, selectedDays) => {
+    setState({
+      ...state,
+      schedule: selectedDays,
+    });
+  };
 
   return (
     <Dialog open={true} onClose={handleClickCancel}>
-      <EditFormHeader onClose={handleClickCancel}>Details</EditFormHeader>
+      <UnitDetailHeader onClose={handleClickCancel}>Details</UnitDetailHeader>
       <DialogContent dividers>
         <Grid container alignItems={'center'}>
           <Grid item xs={12}>
@@ -269,7 +277,7 @@ function UnitDetail({
             </Box>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid item xs={8}>
             <TextField
               variant="standard"
               fullWidth
@@ -278,6 +286,23 @@ function UnitDetail({
               value={state.summary}
               onChange={handleChange}
             />
+          </Grid>
+          <Grid item xs={4}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Unit Type</InputLabel>
+              <Select
+                label="Unit Type"
+                name="type"
+                value={state.type}
+                onChange={handleChange}
+              >
+                {unitTypes.map((type, index) => (
+                  <MenuItem key={index} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
 
           <Grid item xs={12} sx={{ mt: 2, mb: 2 }}>
@@ -329,21 +354,45 @@ function UnitDetail({
               </Select>
             </FormControl>
           </Grid>
-          <Grid item>
-            <DesktopDatePicker
-              label="Due Date"
-              name="dueDate"
-              inputFormat="MM/DD/YYYY"
-              value={state.dueDate}
-              onChange={handleChangeDate}
-              renderInput={(params) => <TextField {...params} />}
-            />
-          </Grid>
-          <Grid item>
-            <Button variant="outlined" onClick={() => handleChangeDate(null)}>
-              Clear
-            </Button>
-          </Grid>
+
+          {state.type === 'habit' && (
+            <Grid item>
+              <ToggleButtonGroup
+                name="schedule"
+                value={state.schedule}
+                onChange={handleChangeSchedule}
+              >
+                {['M', 'T', 'W', 'TH', 'F', 'SA', 'SU'].map((day, index) => (
+                  <ToggleButton key={index} name="schedule" value={day}>
+                    {day}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </Grid>
+          )}
+          {state.type === 'task' && (
+            <>
+              <Grid item>
+                <DesktopDatePicker
+                  label="Due Date"
+                  name="dueDate"
+                  inputFormat="MM/DD/YYYY"
+                  value={state.dueDate}
+                  onChange={handleChangeDate}
+                  renderInput={(params) => <TextField {...params} />}
+                />
+              </Grid>
+              <Grid item>
+                <Button
+                  variant="outlined"
+                  onClick={() => handleChangeDate(null)}
+                >
+                  Clear
+                </Button>
+              </Grid>
+            </>
+          )}
+
           <Grid item xs={12}>
             <Slider
               label="Time Estimate"
@@ -354,7 +403,7 @@ function UnitDetail({
               defaultValue={30}
               step={5}
               marks
-              min={15}
+              min={0}
               max={60}
               onChange={handleChange}
             />
@@ -379,3 +428,18 @@ function UnitDetail({
     </Dialog>
   );
 }
+
+const UnitDetailHeader = ({ children, onClose }) => (
+  <DialogTitle
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}
+  >
+    {children}
+    <IconButton onClick={onClose}>
+      <CloseIcon />
+    </IconButton>
+  </DialogTitle>
+);

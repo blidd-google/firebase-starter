@@ -1,15 +1,16 @@
-import Project from '../../components/Project';
+import Project from '../../../components/Project';
 import {
   getProjectDetails,
   getTopicsForProject,
   getUnitsForProject,
-} from '../../lib/server/projects';
+} from '../../../lib/server/projects';
 
 const ProjectById = ({
   currIdProp,
   projectProp,
   unitsProp,
   topicsProp,
+  tabProp = 0,
 }) => <Project
   currIdProp={currIdProp}
   projectProp={projectProp}
@@ -21,15 +22,17 @@ export default ProjectById;
 
 
 export const getServerSideProps = async ({ params }) => {
-  const { id } = params;
-  const project = await getProjectDetails(id);
-  const topics = await getTopicsForProject(id);
-  const units = await getUnitsForProject(id);
+  const { projectId } = params;
+  const project = await getProjectDetails(projectId);
+  const topics = await getTopicsForProject(projectId);
+  const units = await getUnitsForProject(projectId);
+
+  console.log('UNITS SSR', units);
 
   return {
     props: {
       projectProp: project,
-      currIdProp: id,
+      currIdProp: projectId,
       unitsProp: units,
       topicsProp: topics,
     },

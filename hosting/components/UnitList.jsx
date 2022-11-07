@@ -20,8 +20,17 @@ import * as dayjs from 'dayjs';
 import * as React from 'react';
 import { useState } from 'react';
 import { createUnit } from '../lib/client/unit';
+import { BACKLOG } from '../lib/status';
 
-const UnitList = ({ projectId, filterFn, units, topics, update, openUnit }) => {
+const UnitList = ({
+  projectId,
+  status,
+  filterFn,
+  units,
+  topics,
+  update,
+  openUnit,
+}) => {
   const [displayAddForm, setDisplayAddForm] = useState(false);
   // const [displayEditForm, setDisplayEditForm] = useState('');
 
@@ -50,7 +59,6 @@ const UnitList = ({ projectId, filterFn, units, topics, update, openUnit }) => {
     setDisplayAddForm(false);
   };
 
-  // prettier-ignore
   const unitsFiltered = Object.values(units).filter(filterFn);
 
   return (
@@ -108,6 +116,18 @@ const Unit = ({
   unitProps: { summary, description, topic, dueDate },
   onClick,
 }) => {
+  const isOverdue = (dueDate) => {
+    if (dueDate === null) {
+      return false;
+    }
+    return dayjs.unix(dueDate).isBefore(dayjs(), 'day');
+  };
+
+  let dueDateColor;
+  if (isOverdue(dueDate)) {
+    dueDateColor = 'error';
+  }
+
   return (
     <>
       <Card>
@@ -118,7 +138,7 @@ const Unit = ({
             </Typography>
             <Typography sx={{ fontSize: 14, mb: 1 }}>{description}</Typography>
             {dueDate && (
-              <Typography>
+              <Typography color={dueDateColor}>
                 {dayjs.unix(dueDate).format('MM/DD/YYYY')}
               </Typography>
             )}
@@ -140,7 +160,7 @@ const Unit = ({
 const AddUnitForm = ({ projectId, status, topics, onSubmit, onCancel }) => {
   const [state, setState] = useState({
     projectId: projectId || '',
-    status,
+    status: status || BACKLOG,
     description: '',
     priority: 0,
     topic: '',

@@ -77,7 +77,6 @@ export async function getAllUnitsForProject(projectId) {
     units[data.id] = data;
   });
 
-  console.log('GETALL:', units);
   return units;
 }
 
