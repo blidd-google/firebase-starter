@@ -3,8 +3,8 @@ import { createUnit } from '../lib/client/unit';
 import { BACKLOG, INPROGRESS, TODO } from '../lib/status';
 import UnitList from './UnitList';
 
-const LIST_TITLES = ['BACKLOG', 'TODO', 'IN PROGRESS'];
-export function Roadmap({ projectId, units, topics, updateUnits, openUnit }) {
+const LIST_TITLES = ['BACKLOG', 'ACTIVE', 'IN PROGRESS'];
+export function Roadmap({ projectId, units, updateUnits, openUnit }) {
   const handleNew = async (event) => {
     event.preventDefault();
     // create empty new unit
@@ -26,12 +26,8 @@ export function Roadmap({ projectId, units, topics, updateUnits, openUnit }) {
               {LIST_TITLES[status]}
             </Typography>
             <UnitList
-              projectId={projectId}
               filterFn={(unit) => unit.status === status}
-              status={status}
               units={units}
-              topics={topics}
-              update={updateUnits}
               openUnit={openUnit}
             />
           </Container>

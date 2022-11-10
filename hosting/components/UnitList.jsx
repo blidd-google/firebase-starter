@@ -13,6 +13,7 @@ import {
   MenuItem,
   Select,
   Stack,
+  styled,
   TextField,
   Typography,
 } from '@mui/material';
@@ -22,15 +23,7 @@ import { useState } from 'react';
 import { createUnit } from '../lib/client/unit';
 import { BACKLOG } from '../lib/status';
 
-const UnitList = ({
-  projectId,
-  status,
-  filterFn,
-  units,
-  topics,
-  update,
-  openUnit,
-}) => {
+const UnitList = ({ filterFn, units, openUnit, onClick }) => {
   const [displayAddForm, setDisplayAddForm] = useState(false);
   // const [displayEditForm, setDisplayEditForm] = useState('');
 
@@ -40,33 +33,35 @@ const UnitList = ({
     message: '',
   });
 
-  const handleSubmitAdd = async (state) => {
-    try {
-      await createUnit(state);
-      update();
-    } catch (err) {
-      setDisplayAlert({
-        display: true,
-        severity: 'error',
-        message: err.message,
-      });
-    } finally {
-      setDisplayAddForm(false);
-    }
-  };
+  // const handleSubmitAdd = async (state) => {
+  //   try {
+  //     await createUnit(state);
+  //     update();
+  //   } catch (err) {
+  //     setDisplayAlert({
+  //       display: true,
+  //       severity: 'error',
+  //       message: err.message,
+  //     });
+  //   } finally {
+  //     setDisplayAddForm(false);
+  //   }
+  // };
 
-  const handleCancelAdd = () => {
-    setDisplayAddForm(false);
-  };
+  // const handleCancelAdd = () => {
+  //   setDisplayAddForm(false);
+  // };
 
-  const unitsFiltered = Object.values(units).filter(filterFn);
+  // if no filter fn is specified, will return all units
+  const unitsFiltered = Object.values(units).filter(filterFn || (() => true));
+  onClick = openUnit || onClick;
 
   return (
     <>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} sx={{ maxHeight: 500, overflow: 'auto' }}>
         {unitsFiltered.map(({ id, ...props }) => (
           <Grid item xs={12} key={id}>
-            <Unit unitProps={props} onClick={() => openUnit(id)} />
+            <Unit unitProps={props} onClick={() => onClick(id) || (() => {})} />
           </Grid>
         ))}
         <Grid item xs={12}>
@@ -79,7 +74,7 @@ const UnitList = ({
               Quick Add
             </Button>
           )}
-          {displayAddForm && (
+          {/* {displayAddForm && (
             <AddUnitForm
               projectId={projectId}
               status={status}
@@ -87,7 +82,7 @@ const UnitList = ({
               onSubmit={handleSubmitAdd}
               onCancel={handleCancelAdd}
             />
-          )}
+          )} */}
         </Grid>
         <Grid item xs={12}>
           <Stack>
@@ -116,6 +111,8 @@ const Unit = ({
   unitProps: { summary, description, topic, dueDate },
   onClick,
 }) => {
+  const [border, setBorder] = useState(1);
+
   const isOverdue = (dueDate) => {
     if (dueDate === null) {
       return false;
@@ -130,7 +127,11 @@ const Unit = ({
 
   return (
     <>
-      <Card>
+      <Card
+        sx={{ border: border }}
+        onMouseOver={() => setBorder(2)}
+        onMouseOut={() => setBorder(1)}
+      >
         <CardActionArea onClick={onClick}>
           <CardContent>
             <Typography sx={{ fontSize: 16 }} gutterBottom>

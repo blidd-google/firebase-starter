@@ -59,3 +59,8 @@ exports.removeParentFromChild = functions.firestore
         }
       }
     });
+
+exports.onfinalizetest = functions.storage.object().onFinalize((object) => {
+  console.log('hello');
+});
+

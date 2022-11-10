@@ -13,6 +13,11 @@ const theme = createTheme({
     error: {
       main: red.A400,
     },
+    background: {
+      default: '#fff',
+      secondary: '#f7f7f7',
+    },
+
   },
 });
 

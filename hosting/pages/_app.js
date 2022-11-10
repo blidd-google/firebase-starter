@@ -10,7 +10,6 @@ import { useState } from 'react';
 import Layout from '../components/layout';
 import createEmotionCache from '../lib/createEmotionCache';
 import theme from '../lib/theme';
-import Project from '../components/Project';
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();

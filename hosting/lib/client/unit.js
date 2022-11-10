@@ -50,6 +50,24 @@ export async function putUnit(data) {
 }
 
 export async function deleteUnit(id) {
+  const q = query(
+      collection(db, 'stacks'),
+      where('habitIDs', 'array-contains', id),
+  );
+
+  const promises = [];
+  const snapshot = await getDocs(q);
+  snapshot.forEach((docSnap) => {
+    const stack = docSnap.data();
+    const index = stack.habitIDs.indexOf(id);
+    if (index > -1) {
+      stack.habitIDs.splice(index, 1);
+    }
+    const promise = setDoc(doc(db, 'stacks', stack.id), stack);
+    promises.push(promise);
+  });
+
+  await Promise.all(promises);
   await deleteDoc(doc(db, 'units', id));
 }
 
@@ -80,3 +98,50 @@ export async function getAllUnitsForProject(projectId) {
   return units;
 }
 
+export async function getAllHabitsFromClient() {
+  const ref = collection(db, 'habits');
+  const snapshot = await getDocs(ref);
+  const habits = {};
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    habits[data.id] = data;
+  });
+
+  return habits;
+}
+
+export async function getAllStacksFromClient() {
+  const ref = collection(db, 'stacks');
+  const snapshot = await getDocs(ref);
+  const stacks = {};
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    stacks[data.id] = data;
+  });
+
+  return stacks;
+}
+
+export async function createStack(data) {
+  if (!data.title) {
+    throw new Error('Failed to create stack: title not specified');
+  }
+
+  const docRef = await addDoc(collection(db, 'stacks'), data);
+  await setDoc(docRef, { id: docRef.id }, { merge: true });
+  console.log('CREATE', data);
+  return docRef.id;
+}
+
+export async function putStack(data) {
+  if (data.id === undefined) {
+    throw new Error('Failed to create stack: no id specified');
+  }
+
+  console.log('PUT:', data);
+  try {
+    await setDoc(doc(db, 'stacks', data.id), data);
+  } catch (err) {
+    console.log(err);
+  }
+}

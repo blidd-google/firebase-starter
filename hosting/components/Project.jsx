@@ -178,7 +178,6 @@ export default function Project({
           <Roadmap
             projectId={currIdProp}
             units={units}
-            topics={topics}
             updateUnits={updateUnits}
           />
         </UnitDetailProvider>

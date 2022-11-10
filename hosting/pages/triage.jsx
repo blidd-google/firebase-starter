@@ -149,13 +149,7 @@ const Review = ({ units, topics, updateUnits }) => {
             topics={topics}
             updateUnits={updateUnits}
           >
-            <UnitList
-              projectId=""
-              filterFn={overdueFilter}
-              units={units}
-              topics={topics}
-              update={updateUnits}
-            />
+            <UnitList filterFn={overdueFilter} units={units} />
           </UnitDetailProvider>
         </Grid>
 
@@ -166,13 +160,7 @@ const Review = ({ units, topics, updateUnits }) => {
             topics={topics}
             updateUnits={updateUnits}
           >
-            <UnitList
-              projectId=""
-              filterFn={blockedFilter}
-              units={units}
-              topics={topics}
-              update={updateUnits}
-            />
+            <UnitList filterFn={blockedFilter} units={units} />
           </UnitDetailProvider>
         </Grid>
       </Grid>
@@ -230,13 +218,7 @@ const Sketch = ({ units, topics, updateUnits }) => {
             topics={topics}
             updateUnits={updateUnits}
           >
-            <UnitList
-              projectId=""
-              filterFn={backlogFilter}
-              units={units}
-              topics={topics}
-              update={updateUnits}
-            />
+            <UnitList filterFn={backlogFilter} units={units} />
           </UnitDetailProvider>
         </Grid>
 
@@ -247,14 +229,7 @@ const Sketch = ({ units, topics, updateUnits }) => {
             topics={topics}
             updateUnits={updateUnits}
           >
-            <UnitList
-              projectId=""
-              status={TODO}
-              filterFn={recentFilter}
-              units={units}
-              topics={topics}
-              update={updateUnits}
-            />
+            <UnitList filterFn={recentFilter} units={units} />
           </UnitDetailProvider>
         </Grid>
 
@@ -265,14 +240,7 @@ const Sketch = ({ units, topics, updateUnits }) => {
             topics={topics}
             updateUnits={updateUnits}
           >
-            <UnitList
-              projectId=""
-              status={TODO}
-              filterFn={todayFilter}
-              units={units}
-              topics={topics}
-              update={updateUnits}
-            />
+            <UnitList filterFn={todayFilter} units={units} />
           </UnitDetailProvider>
         </Grid>
       </Grid>

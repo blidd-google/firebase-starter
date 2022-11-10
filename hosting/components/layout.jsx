@@ -123,6 +123,11 @@ function Sidebar({ selected, activeProjects, backburnerProjects, onClickNew }) {
           </Link>
         </ListItem>
         <ListItem>
+          <Link href={'/habits'}>
+            <ListItemButton>Habits</ListItemButton>
+          </Link>
+        </ListItem>
+        <ListItem>
           <Link href={'/triage'} passHref>
             <ListItemButton>Triage</ListItemButton>
           </Link>

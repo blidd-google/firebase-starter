@@ -42,14 +42,7 @@ export default function Agenda({ unitsProp, topicsProp }) {
         topics={topics}
         updateUnits={updateUnits}
       >
-        <UnitList
-          projectId=""
-          status={TODO}
-          filterFn={todayFilter}
-          units={units}
-          topics={topics}
-          update={updateUnits}
-        />
+        <UnitList filterFn={todayFilter} units={units} />
       </UnitDetailProvider>
     </Stack>
   );

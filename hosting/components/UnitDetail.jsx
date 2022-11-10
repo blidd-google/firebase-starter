@@ -53,6 +53,7 @@ export default function UnitDetailProvider({
   children,
 }) {
   const [formId, setFormId] = useState('');
+  console.log('CHILDREN', children);
 
   const handleFollowEdit = async (state) => {
     // new followup unit
@@ -103,7 +104,7 @@ export default function UnitDetailProvider({
         <UnitDetail
           units={units}
           id={formId}
-          topics={topics}
+          topics={topics || []}
           onSubmit={handleSubmitEdit}
           onCancel={handleCancelEdit}
           onDelete={handleDeleteEdit}
@@ -172,6 +173,8 @@ function UnitDetail({
       schedule: units[id].schedule || [],
     });
   }, [id, units]);
+
+  console.log(state);
 
   const handleClickDone = (event) => {
     event.preventDefault();
@@ -328,7 +331,7 @@ function UnitDetail({
                 Backlog
               </ToggleButton>
               <ToggleButton name="status" value={1}>
-                Todo
+                Active
               </ToggleButton>
               <ToggleButton name="status" value={2}>
                 In Progress
@@ -429,7 +432,7 @@ function UnitDetail({
   );
 }
 
-const UnitDetailHeader = ({ children, onClose }) => (
+export const UnitDetailHeader = ({ children, onClose }) => (
   <DialogTitle
     sx={{
       display: 'flex',
