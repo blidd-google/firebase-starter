@@ -22,35 +22,21 @@ import * as React from 'react';
 import { useState } from 'react';
 import { createUnit } from '../lib/client/unit';
 import { BACKLOG } from '../lib/status';
+import isToday from 'dayjs/plugin/isToday';
+import { computeStreak } from '../lib/time';
+import { useContext } from 'react';
+import { UnitDetailContext, UnitsContext } from '../context';
+dayjs.extend(isToday);
 
-const UnitList = ({ filterFn, units, openUnit, onClick }) => {
+const UnitList = ({ filterFn, onClick }) => {
   const [displayAddForm, setDisplayAddForm] = useState(false);
-  // const [displayEditForm, setDisplayEditForm] = useState('');
-
   const [displayAlert, setDisplayAlert] = useState({
     display: false,
     severity: '',
     message: '',
   });
-
-  // const handleSubmitAdd = async (state) => {
-  //   try {
-  //     await createUnit(state);
-  //     update();
-  //   } catch (err) {
-  //     setDisplayAlert({
-  //       display: true,
-  //       severity: 'error',
-  //       message: err.message,
-  //     });
-  //   } finally {
-  //     setDisplayAddForm(false);
-  //   }
-  // };
-
-  // const handleCancelAdd = () => {
-  //   setDisplayAddForm(false);
-  // };
+  const { units } = useContext(UnitsContext);
+  const openUnit = useContext(UnitDetailContext);
 
   // if no filter fn is specified, will return all units
   const unitsFiltered = Object.values(units).filter(filterFn || (() => true));
@@ -108,7 +94,7 @@ const UnitList = ({ filterFn, units, openUnit, onClick }) => {
 };
 
 const Unit = ({
-  unitProps: { summary, description, topic, dueDate },
+  unitProps: { summary, description, topic, dueDate, doneDates },
   onClick,
 }) => {
   const [border, setBorder] = useState(1);
@@ -120,10 +106,12 @@ const Unit = ({
     return dayjs.unix(dueDate).isBefore(dayjs(), 'day');
   };
 
-  let dueDateColor;
+  let dueDateColor = 'primary';
   if (isOverdue(dueDate)) {
     dueDateColor = 'error';
   }
+
+  const streak = computeStreak(doneDates ?? []);
 
   return (
     <>
@@ -150,6 +138,9 @@ const Unit = ({
                 variant="outlined"
                 size="small"
               />
+            )}
+            {streak > 0 && (
+              <Typography color="secondary">{streak} streak!</Typography>
             )}
           </CardContent>
         </CardActionArea>

@@ -22,8 +22,8 @@ import { accumulateUnitMinutes, formatTimeEstimate } from '../lib/time';
 import { deleteProject, putProject } from '../lib/client/project';
 import { useContext } from 'react';
 import { useRouter } from 'next/router';
-import { ProjectsContext } from '../lib/context';
-import { BACKLOG } from '../lib/status';
+import { ProjectsContext, UnitsContext } from '../context';
+import { useTopics, useUnits } from '../hooks';
 
 /**
  * Main page displaying project information.
@@ -36,9 +36,11 @@ export default function Project({
   unitsProp,
   topicsProp,
 }) {
+  const { units, updateUnits } = useUnits(unitsProp, currIdProp);
+  const { topics } = useTopics(topicsProp, currIdProp);
+
   const [project, setProject] = useState(projectProp);
-  const [units, setUnits] = useState(unitsProp);
-  const [topics, setTopics] = useState(topicsProp);
+  const { projects, setProjects } = useContext(ProjectsContext);
 
   const [tab, setTab] = useState(0);
   const [editable, setEditable] = useState(false);
@@ -49,22 +51,6 @@ export default function Project({
   useEffect(() => {
     setProject(projectProp);
   }, [projectProp]);
-
-  useEffect(() => {
-    setUnits(unitsProp);
-  }, [unitsProp]);
-
-  useEffect(() => {
-    setTopics(topicsProp);
-  }, [topicsProp]);
-
-  const { projects, setProjects } = useContext(ProjectsContext);
-
-  // this callback will pull the latest data from firestore and
-  // trigger a re-render of the unit lists
-  const updateUnits = async () => {
-    setUnits(await getAllUnitsForProject(currIdProp));
-  };
 
   const handleChange = (event) => {
     setProject({
@@ -78,7 +64,6 @@ export default function Project({
     const idx = projects.findIndex((elt) => elt.id === project.id);
     const projectsUpdated = [...projects];
     projectsUpdated[idx] = project;
-    console.log('new projects', projectsUpdated);
     setProjects(projectsUpdated);
     setEditable(false);
   };
@@ -170,17 +155,9 @@ export default function Project({
       </Box>
 
       {tab === 0 && (
-        <UnitDetailProvider
-          units={units}
-          topics={topics}
-          updateUnits={updateUnits}
-        >
-          <Roadmap
-            projectId={currIdProp}
-            units={units}
-            updateUnits={updateUnits}
-          />
-        </UnitDetailProvider>
+        <UnitsContext.Provider value={{ units, updateUnits }}>
+          <Roadmap projectId={currIdProp} topics={topics} />
+        </UnitsContext.Provider>
       )}
       {tab === 1 && <Topics projectId={currIdProp} topics={topics} />}
     </Box>

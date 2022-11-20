@@ -9,8 +9,6 @@ const TopicDetail = ({ topic }) => {
   const router = useRouter();
   const [state, setState] = useState(topic);
 
-  console.log('STATE', state);
-
   const handleClickSave = async (event) => {
     event.preventDefault();
     await putTopic(state);
@@ -66,7 +64,6 @@ const TopicDetail = ({ topic }) => {
 export const getServerSideProps = async ({ params }) => {
   const { topicId } = params;
   const topic = await getTopicDetails(topicId);
-  console.log('Topic', topic);
   return { props: { topic } };
 };
 

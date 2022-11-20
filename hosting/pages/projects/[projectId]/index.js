@@ -27,8 +27,6 @@ export const getServerSideProps = async ({ params }) => {
   const topics = await getTopicsForProject(projectId);
   const units = await getUnitsForProject(projectId);
 
-  console.log('UNITS SSR', units);
-
   return {
     props: {
       projectProp: project,

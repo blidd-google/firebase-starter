@@ -1,10 +1,15 @@
 import { Button, Container, Grid, Typography } from '@mui/material';
+import { useContext } from 'react';
+import { UnitsContext } from '../context';
 import { createUnit } from '../lib/client/unit';
 import { BACKLOG, INPROGRESS, TODO } from '../lib/status';
+import UnitDetailProvider from './UnitDetail';
 import UnitList from './UnitList';
 
 const LIST_TITLES = ['BACKLOG', 'ACTIVE', 'IN PROGRESS'];
-export function Roadmap({ projectId, units, updateUnits, openUnit }) {
+export function Roadmap({ projectId, topics }) {
+  const { units, updateUnits } = useContext(UnitsContext);
+
   const handleNew = async (event) => {
     event.preventDefault();
     // create empty new unit
@@ -15,7 +20,6 @@ export function Roadmap({ projectId, units, updateUnits, openUnit }) {
     });
     await updateUnits();
     // open up unit detail dialog
-    openUnit(id);
   };
   return (
     <Grid container>
@@ -25,11 +29,9 @@ export function Roadmap({ projectId, units, updateUnits, openUnit }) {
             <Typography mb={3} variant="h5">
               {LIST_TITLES[status]}
             </Typography>
-            <UnitList
-              filterFn={(unit) => unit.status === status}
-              units={units}
-              openUnit={openUnit}
-            />
+            <UnitDetailProvider topics={topics}>
+              <UnitList filterFn={(unit) => unit.status === status} />
+            </UnitDetailProvider>
           </Container>
         </Grid>
       ))}

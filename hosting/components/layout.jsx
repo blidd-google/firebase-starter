@@ -28,7 +28,7 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { createProject } from '../lib/client/project';
 import { getProjects } from '../lib/client/getProjects';
-import { ProjectsContext } from '../lib/context';
+import { ProjectsContext } from '../context';
 
 /**
  * Checks if two lists of projects are equal.

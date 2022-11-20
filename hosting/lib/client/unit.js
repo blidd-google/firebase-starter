@@ -99,7 +99,7 @@ export async function getAllUnitsForProject(projectId) {
 }
 
 export async function getAllHabitsFromClient() {
-  const ref = collection(db, 'habits');
+  const ref = collection(db, 'units');
   const snapshot = await getDocs(ref);
   const habits = {};
   snapshot.forEach((doc) => {
@@ -129,7 +129,6 @@ export async function createStack(data) {
 
   const docRef = await addDoc(collection(db, 'stacks'), data);
   await setDoc(docRef, { id: docRef.id }, { merge: true });
-  console.log('CREATE', data);
   return docRef.id;
 }
 
@@ -137,8 +136,6 @@ export async function putStack(data) {
   if (data.id === undefined) {
     throw new Error('Failed to create stack: no id specified');
   }
-
-  console.log('PUT:', data);
   try {
     await setDoc(doc(db, 'stacks', data.id), data);
   } catch (err) {

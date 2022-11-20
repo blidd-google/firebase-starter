@@ -1,9 +1,6 @@
 import {
   Box,
   Button,
-  Card,
-  CardActionArea,
-  CardContent,
   Dialog,
   DialogContent,
   Grid,
@@ -13,37 +10,34 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+// import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import * as React from 'react';
 import { useState } from 'react';
-import { getAllHabits, getAllStacks } from '../lib/server/habit';
+import { getAllStacks } from '../lib/server/habit';
 import {
   DragDropContext,
-  Draggable,
   Droppable,
   resetServerContext,
 } from 'react-beautiful-dnd';
 import { putStack } from '../lib/client/stack';
 import UnitDetailProvider, { UnitDetailHeader } from '../components/UnitDetail';
 import UnitList from '../components/UnitList';
-import {
-  createStack,
-  getAllHabitsFromClient,
-  getAllStacksFromClient,
-} from '../lib/client/unit';
-import { getAllTopics } from '../lib/server/projects';
+import { createStack, getAllStacksFromClient } from '../lib/client/unit';
+import { getAllTopics, getAllUnits } from '../lib/server/projects';
+import { DAYS } from '../lib/time';
+import dayjs from 'dayjs';
+import { HabitStack } from '../components/habit';
+import { TopicsContext, UnitsContext } from '../context';
+import { useUnits } from '../hooks';
 
-export const Habits = ({ habitsProp, stacksProp, topicsProp }) => {
-  const [habits, setHabits] = useState(habitsProp);
+export const Habits = ({ unitsProp, stacksProp, topicsProp }) => {
   const [stacks, setStacks] = useState(stacksProp);
-  const [schedule, setSchedule] = useState('ALL');
+  const [schedule, setSchedule] = useState(DAYS[dayjs().day()]);
   const [detailId, setDetailId] = useState('');
 
-  const updateHabits = async () => {
-    setHabits(await getAllHabitsFromClient());
-  };
+  const { units, updateUnits } = useUnits(unitsProp);
 
   const stacksFiltered = Object.values(stacks).filter((stack) => {
     if (schedule === 'ALL') {
@@ -82,8 +76,6 @@ export const Habits = ({ habitsProp, stacksProp, topicsProp }) => {
   };
 
   const handleChangeSchedule = (event) => {
-    console.log(event.target.value);
-    console.log(schedule);
     setSchedule(event.target.value);
   };
 
@@ -105,76 +97,67 @@ export const Habits = ({ habitsProp, stacksProp, topicsProp }) => {
   };
 
   return (
-    <Stack
-      component="main"
-      sx={{
-        display: 'flex',
-        width: 1200,
-        justifyContent: 'center',
-      }}
-    >
-      <ToggleButtonGroup
-        exclusive
-        name="schedule"
-        value={schedule}
-        onChange={handleChangeSchedule}
-      >
-        {['M', 'T', 'W', 'TH', 'F', 'SA', 'SU', 'ALL'].map((day, index) => (
-          <ToggleButton key={index} name="schedule" value={day}>
-            {day}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
-
-      {!!detailId && (
-        <HabitStackDetail
-          stackId={detailId}
-          stacks={stacks}
-          habits={habits}
-          updateHabits={updateHabits}
-          topics={topicsProp}
-          onCancel={handleCancel}
-        />
-      )}
-
-      <Grid container>
-        {stacksFiltered.map(({ id }) => (
-          <Grid item key={id} xs={4}>
-            <DragDropContext onDragEnd={onDragEnd}>
-              <HabitStack
-                id={id}
-                stacks={stacks}
-                habits={habits}
-                updateHabits={updateHabits}
-                topics={topicsProp}
-                openDetail={() => setDetailId(id)}
-              />
-            </DragDropContext>
-          </Grid>
-        ))}
-        <Grid item xs={4}>
-          <Button
-            variant="outlined"
-            endIcon={<AddIcon />}
-            sx={{ margin: 2 }}
-            onClick={handleNewStack}
+    <UnitsContext.Provider value={{ units, updateUnits }}>
+      <TopicsContext.Provider value={topicsProp}>
+        <Stack
+          component="main"
+          sx={{
+            display: 'flex',
+            width: 1200,
+            justifyContent: 'center',
+          }}
+        >
+          <ToggleButtonGroup
+            exclusive
+            name="schedule"
+            value={schedule}
+            onChange={handleChangeSchedule}
           >
-            New Stack
-          </Button>
-        </Grid>
-      </Grid>
-    </Stack>
+            {['M', 'T', 'W', 'TH', 'F', 'SA', 'SU', 'ALL'].map((day, index) => (
+              <ToggleButton key={index} name="schedule" value={day}>
+                {day}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+
+          {!!detailId && (
+            <HabitStackDetail
+              stackId={detailId}
+              stacks={stacks}
+              onCancel={handleCancel}
+            />
+          )}
+
+          <Grid container>
+            {stacksFiltered.map(({ id }) => (
+              <Grid item key={id} xs={4}>
+                <DragDropContext onDragEnd={onDragEnd}>
+                  <HabitStackContainer
+                    id={id}
+                    stacks={stacks}
+                    openDetail={() => setDetailId(id)}
+                  />
+                </DragDropContext>
+              </Grid>
+            ))}
+            <Grid item xs={4}>
+              <Button
+                variant="outlined"
+                endIcon={<AddIcon />}
+                sx={{ margin: 2 }}
+                onClick={handleNewStack}
+              >
+                New Stack
+              </Button>
+            </Grid>
+          </Grid>
+        </Stack>
+      </TopicsContext.Provider>
+    </UnitsContext.Provider>
   );
 };
 
-const HabitStackDetail = ({
-  stackId,
-  stacks,
-  habits,
-  updateHabits,
-  topics,
-  onCancel,
-}) => {
+const HabitStackDetail = ({ stackId, stacks, onCancel }) => {
   const [stack, setStack] = useState(stacks[stackId]);
   const [selected, setSelected] = useState([]);
   const [trashEnabled, setTrashEnabled] = useState(false);
@@ -262,14 +245,10 @@ const HabitStackDetail = ({
   };
 
   const handleMoveSelected = () => {
-    console.log('SELECTED', selected);
     setSelected([]);
   };
 
-  const stackArr = stack.habitIDs.map((habitID) => habits[habitID]);
-
-  console.log('stack', stack);
-  console.log('stackarr', stackArr);
+  const habitsFilter = (unit) => unit.type === 'habit';
 
   return (
     <Dialog fullScreen open={true} onClose={handleClickCancel}>
@@ -278,19 +257,21 @@ const HabitStackDetail = ({
       </UnitDetailHeader>
       <DialogContent dividers sx={{ overflow: 'hidden' }}>
         <Grid container>
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <TextField
               label="Title"
               name="title"
+              size="small"
               value={stack.title}
               onChange={handleChange}
             />
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <TextField
               label="Cue"
               name="cue"
+              size="small"
               value={stack.cue}
               onChange={handleChange}
             />
@@ -314,12 +295,11 @@ const HabitStackDetail = ({
 
           <Grid item xs={6}>
             <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
-              <UnitDetailProvider
-                units={habits}
-                updateUnits={updateHabits}
-                topics={topics}
-              >
-                <HabitStackContent id={stackId} stackArray={stackArr} />
+              <UnitDetailProvider>
+                <HabitStack
+                  id={stackId}
+                  stackHabitIDs={stacks[stackId].habitIDs}
+                />
               </UnitDetailProvider>
 
               <Droppable droppableId="delete">
@@ -348,12 +328,9 @@ const HabitStackDetail = ({
           </Grid>
 
           <Grid item xs={6}>
-            <UnitList
-              filterFn={() => true}
-              units={habits}
-              onClick={handleClickUnit}
-            />
+            <UnitList filterFn={habitsFilter} onClick={handleClickUnit} />
           </Grid>
+
           <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Button variant="contained" onClick={handleMoveSelected}>
               Move Selected
@@ -365,26 +342,13 @@ const HabitStackDetail = ({
   );
 };
 
-export const HabitStack = ({
-  id,
-  stacks,
-  habits,
-  updateHabits,
-  topics,
-  openDetail,
-}) => {
-  const stackArr = stacks[id].habitIDs.map((habitID) => habits[habitID]);
-
+export const HabitStackContainer = ({ id, stacks, openDetail }) => {
   return (
     <Box sx={{ margin: 2, padding: 2, bgcolor: 'background.secondary' }}>
       <Typography variant="h6">{stacks[id].title}</Typography>
       <Typography variant="body">cue: {stacks[id].cue}</Typography>
-      <UnitDetailProvider
-        units={habits}
-        updateUnits={updateHabits}
-        topics={topics}
-      >
-        <HabitStackContent id={id} stackArray={stackArr} />
+      <UnitDetailProvider>
+        <HabitStack id={id} stackHabitIDs={stacks[id].habitIDs} />
       </UnitDetailProvider>
 
       {!!openDetail && <Button onClick={openDetail}>Open</Button>}
@@ -392,65 +356,14 @@ export const HabitStack = ({
   );
 };
 
-export const HabitStackContent = ({ id, stackArray, openUnit }) => {
-  console.log('OPENUNIT', openUnit);
-  return (
-    <Droppable droppableId={id}>
-      {(provided) => (
-        <Box ref={provided.innerRef} {...provided.droppableProps}>
-          {stackArray.map((habit, index) => (
-            <Box key={index}>
-              <HabitCard
-                key={habit.id}
-                id={habit.id}
-                summary={habit.summary}
-                timeEst={habit.timeEst}
-                index={index}
-                openUnit={openUnit || (() => {})}
-              />
-              {/* {index < stack.length - 1 && <ArrowDownwardIcon />} */}
-            </Box>
-          ))}
-          {provided.placeholder}
-        </Box>
-      )}
-    </Droppable>
-  );
-};
-
-export const HabitCard = ({ id, summary, timeEst, index, openUnit }) => {
-  return (
-    <Draggable draggableId={id} index={index}>
-      {(provided) => (
-        <Box
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          ref={provided.innerRef}
-          sx={{ padding: 1 }}
-          onClick={() => openUnit(id)}
-        >
-          <Card>
-            <CardContent>
-              {summary}
-              {timeEst > 0 && (
-                <Typography color="primary">{timeEst} min</Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Box>
-      )}
-    </Draggable>
-  );
-};
-
 export const getServerSideProps = async () => {
   resetServerContext();
-  const habits = await getAllHabits();
+  const units = await getAllUnits();
   const stacks = await getAllStacks();
   const topics = await getAllTopics();
   return {
     props: {
-      habitsProp: habits,
+      unitsProp: units,
       stacksProp: stacks,
       topicsProp: topics,
     },

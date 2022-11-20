@@ -24,9 +24,13 @@ import {
 import { DesktopDatePicker } from '@mui/x-date-pickers';
 import * as dayjs from 'dayjs';
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { createUnit, deleteUnit, putUnit } from '../lib/client/unit';
 import { COMPLETE } from '../lib/status';
+
+import isToday from 'dayjs/plugin/isToday';
+import { TopicsContext, UnitDetailContext, UnitsContext } from '../context';
+dayjs.extend(isToday);
 
 function getPrevIdIfExists(units, id) {
   const prevId = units[id].prevId;
@@ -46,14 +50,11 @@ function getNextIdIfExists(units, id) {
 
 const unitTypes = ['cue', 'habit', 'task'];
 
-export default function UnitDetailProvider({
-  units,
-  topics,
-  updateUnits,
-  children,
-}) {
+export default function UnitDetailProvider({ children }) {
+  const { units, updateUnits } = useContext(UnitsContext);
+  const topics = useContext(TopicsContext);
+
   const [formId, setFormId] = useState('');
-  console.log('CHILDREN', children);
 
   const handleFollowEdit = async (state) => {
     // new followup unit
@@ -99,7 +100,7 @@ export default function UnitDetailProvider({
   };
 
   return (
-    <>
+    <UnitDetailContext.Provider value={(id) => setFormId(id)}>
       {formId !== '' && (
         <UnitDetail
           units={units}
@@ -109,18 +110,10 @@ export default function UnitDetailProvider({
           onCancel={handleCancelEdit}
           onDelete={handleDeleteEdit}
           onFollow={handleFollowEdit}
-          openForm={(id) => {
-            setFormId(id);
-          }}
         />
       )}
-      <children.type
-        {...children.props}
-        openUnit={(id) => {
-          setFormId(id);
-        }}
-      />
-    </>
+      <children.type {...children.props} />
+    </UnitDetailContext.Provider>
   );
 }
 
@@ -132,7 +125,6 @@ function UnitDetail({
   onCancel,
   onDelete,
   onFollow,
-  openForm,
 }) {
   const dateToUnix = (date) => {
     return date ? date.unix() : null;
@@ -141,6 +133,8 @@ function UnitDetail({
   const unixToDate = (epoch) => {
     return epoch ? dayjs.unix(epoch) : null;
   };
+
+  const openForm = useContext(UnitDetailContext);
 
   const [state, setState] = useState({
     id: id,
@@ -155,6 +149,7 @@ function UnitDetail({
     timeEst: units[id].timeEst || null,
     type: units[id].type || 'task',
     schedule: units[id].schedule || [],
+    doneDates: units[id].doneDates ?? [],
   });
 
   useEffect(() => {
@@ -171,18 +166,25 @@ function UnitDetail({
       dueDate: unixToDate(units[id].dueDate),
       timeEst: units[id].timeEst || null,
       schedule: units[id].schedule || [],
+      doneDates: units[id].doneDates ?? [],
     });
   }, [id, units]);
 
-  console.log(state);
-
   const handleClickDone = (event) => {
     event.preventDefault();
+
+    const latest = unixToDate(state.doneDates[state.doneDates.length - 1]);
+    if (latest && latest.isToday()) {
+      state.doneDates.pop();
+    }
+    state.doneDates.push(dateToUnix(dayjs()));
+
     onSubmit({
       ...state,
       dueDate: dateToUnix(state.dueDate),
       doneDate: dateToUnix(dayjs()),
-      status: COMPLETE,
+      doneDates: state.doneDates,
+      status: state.type === 'task' ? COMPLETE : state.status,
     });
     onCancel();
   };
@@ -241,6 +243,8 @@ function UnitDetail({
       schedule: selectedDays,
     });
   };
+
+  console.log('state', state);
 
   return (
     <Dialog open={true} onClose={handleClickCancel}>
