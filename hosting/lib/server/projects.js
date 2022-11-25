@@ -44,8 +44,8 @@ export async function getAllUnits() {
 }
 
 export async function getAllTopics() {
-  const unitCollection = db.collection('topics');
-  const snapshot = await unitCollection.get();
+  const col = db.collection('topics');
+  const snapshot = await col.get();
   const units = [];
   snapshot.forEach((doc) => {
     const data = doc.data();
@@ -85,9 +85,9 @@ export async function getTopicsForProject(id) {
   for (const topicId in topics) {
     // prettier-ignore
     const resourcesRef = db
-        .collection('topics')
-        .doc(topicId)
-        .collection('resources');
+      .collection('topics')
+      .doc(topicId)
+      .collection('resources');
     const snapshot = await resourcesRef.get();
     topics[topicId].resources = [];
     snapshot.forEach((resourceDoc) => {

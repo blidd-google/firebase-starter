@@ -23,6 +23,13 @@
       "object-curly-spacing": ["error", "always"],
       "react/prop-types": "off",
       "require-jsdoc": "off",
-      "guard-for-in": "off"
+      "guard-for-in": "off",
+      "indent": ["error", 2, {
+        "FunctionExpression": 
+        {
+          "body": 1, 
+          "parameters": 2
+        } 
+      }]
   }
 }

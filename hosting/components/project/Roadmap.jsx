@@ -1,14 +1,15 @@
-import { Button, Container, Grid, Typography } from '@mui/material';
+import { Box, Button, Grid, Typography } from '@mui/material';
 import { useContext } from 'react';
-import { UnitsContext } from '../context';
-import { createUnit } from '../lib/client/unit';
-import { BACKLOG, INPROGRESS, TODO } from '../lib/status';
-import UnitDetailProvider from './UnitDetail';
-import UnitList from './UnitList';
+import { UnitDetailContext, UnitsContext } from '../../context';
+import { createUnit } from '../../lib/client/unit';
+import { statusFilterFactory } from '../../lib/filters';
+import { BACKLOG, INPROGRESS, TODO } from '../../lib/status';
+import UnitList from '../UnitList';
 
 const LIST_TITLES = ['BACKLOG', 'ACTIVE', 'IN PROGRESS'];
-export function Roadmap({ projectId, topics }) {
-  const { units, updateUnits } = useContext(UnitsContext);
+export default function Roadmap({ projectId }) {
+  const { updateUnits } = useContext(UnitsContext);
+  const openUnitDetail = useContext(UnitDetailContext);
 
   const handleNew = async (event) => {
     event.preventDefault();
@@ -20,19 +21,19 @@ export function Roadmap({ projectId, topics }) {
     });
     await updateUnits();
     // open up unit detail dialog
+    openUnitDetail(id);
   };
+
   return (
     <Grid container>
       {[BACKLOG, TODO, INPROGRESS].map((status) => (
-        <Grid item xs={4} key={status} sx={{ alignContent: 'flex-start' }}>
-          <Container sx={{ width: 350 }}>
+        <Grid item xs={4} key={status}>
+          <Box sx={{ width: 350, border: 1 }}>
             <Typography mb={3} variant="h5">
               {LIST_TITLES[status]}
             </Typography>
-            <UnitDetailProvider topics={topics}>
-              <UnitList filterFn={(unit) => unit.status === status} />
-            </UnitDetailProvider>
-          </Container>
+            <UnitList filters={[statusFilterFactory(status)]} />
+          </Box>
         </Grid>
       ))}
       <Grid item xs={12}>

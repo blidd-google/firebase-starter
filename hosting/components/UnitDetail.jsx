@@ -30,6 +30,7 @@ import { COMPLETE } from '../lib/status';
 
 import isToday from 'dayjs/plugin/isToday';
 import { TopicsContext, UnitDetailContext, UnitsContext } from '../context';
+import { applyFiltersToUnits, typeFilterFactory } from '../lib/filters';
 dayjs.extend(isToday);
 
 function getPrevIdIfExists(units, id) {
@@ -48,12 +49,11 @@ function getNextIdIfExists(units, id) {
   return '';
 }
 
-const unitTypes = ['cue', 'habit', 'task'];
+const unitTypes = ['cue', 'habit', 'task', 'milestone'];
 
 export default function UnitDetailProvider({ children }) {
   const { units, updateUnits } = useContext(UnitsContext);
   const topics = useContext(TopicsContext);
-
   const [formId, setFormId] = useState('');
 
   const handleFollowEdit = async (state) => {
@@ -64,7 +64,7 @@ export default function UnitDetailProvider({ children }) {
       prevId: state.id,
       summary: `followup: ${state.summary}`,
       status: state.status,
-      topic: state.topic,
+      topicId: state.topicId,
     });
     await putUnit({
       ...state,
@@ -101,7 +101,7 @@ export default function UnitDetailProvider({ children }) {
 
   return (
     <UnitDetailContext.Provider value={(id) => setFormId(id)}>
-      {formId !== '' && (
+      {formId !== '' && units[formId] && (
         <UnitDetail
           units={units}
           id={formId}
@@ -144,12 +144,14 @@ function UnitDetail({
     prevId: getPrevIdIfExists(units, id),
     nextId: getNextIdIfExists(units, id),
     description: units[id].description || '',
-    topic: units[id].topic || '',
+    // topic: units[id].topic || '',
+    topicId: units[id].topicId ?? '',
     dueDate: unixToDate(units[id].dueDate),
     timeEst: units[id].timeEst || null,
     type: units[id].type || 'task',
     schedule: units[id].schedule || [],
     doneDates: units[id].doneDates ?? [],
+    milestone: units[id].milestone ?? '',
   });
 
   useEffect(() => {
@@ -162,11 +164,13 @@ function UnitDetail({
       prevId: getPrevIdIfExists(units, id),
       nextId: getNextIdIfExists(units, id),
       description: units[id].description || '',
-      topic: units[id].topic || '',
+      // topic: units[id].topic || '',
+      topicId: units[id].topicId ?? '',
       dueDate: unixToDate(units[id].dueDate),
       timeEst: units[id].timeEst || null,
       schedule: units[id].schedule || [],
       doneDates: units[id].doneDates ?? [],
+      milestone: units[id].milestone ?? '',
     });
   }, [id, units]);
 
@@ -243,6 +247,10 @@ function UnitDetail({
       schedule: selectedDays,
     });
   };
+
+  const milestones = applyFiltersToUnits(units, [
+    typeFilterFactory('milestone'),
+  ]);
 
   console.log('state', state);
 
@@ -348,16 +356,15 @@ function UnitDetail({
               <InputLabel>Topic</InputLabel>
               <Select
                 label="Topic"
-                name="topic"
-                value={state.topic}
+                name="topicId"
+                value={state.topicId}
                 onChange={handleChange}
               >
                 {topics.map(({ id, name, resources }) => (
-                  <MenuItem key={id} value={name}>
+                  <MenuItem key={id} value={id}>
                     {name}
                   </MenuItem>
                 ))}
-                ;
               </Select>
             </FormControl>
           </Grid>
@@ -377,7 +384,7 @@ function UnitDetail({
               </ToggleButtonGroup>
             </Grid>
           )}
-          {state.type === 'task' && (
+          {(state.type === 'task' || state.type === 'milestone') && (
             <>
               <Grid item>
                 <DesktopDatePicker
@@ -415,6 +422,27 @@ function UnitDetail({
               onChange={handleChange}
             />
           </Grid>
+
+          {state.type !== 'milestone' && (
+            <Grid item xs={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Milestone</InputLabel>
+                <Select
+                  label="Milestone"
+                  name="milestone"
+                  value={state.milestone}
+                  onChange={handleChange}
+                >
+                  {milestones.map(({ id, summary }) => (
+                    <MenuItem key={id} value={id}>
+                      {summary}
+                    </MenuItem>
+                  ))}
+                  <MenuItem value={''}>none</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
         </Grid>
       </DialogContent>
 

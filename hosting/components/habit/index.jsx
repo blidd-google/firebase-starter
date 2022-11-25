@@ -1,4 +1,3 @@
-import HabitCard from './HabitCard';
-import HabitStack from './HabitStack';
+import { HabitStack, HabitStackWithDnd } from './HabitStack';
 
-export { HabitCard, HabitStack };
+export { HabitStack, HabitStackWithDnd };

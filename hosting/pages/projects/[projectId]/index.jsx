@@ -1,4 +1,4 @@
-import Project from '../../../components/Project';
+import { Project } from '../../../components/project';
 import {
   getProjectDetails,
   getTopicsForProject,
@@ -11,15 +11,16 @@ const ProjectById = ({
   unitsProp,
   topicsProp,
   tabProp = 0,
-}) => <Project
-  currIdProp={currIdProp}
-  projectProp={projectProp}
-  unitsProp={unitsProp}
-  topicsProp={topicsProp}
-/>;
+}) => (
+  <Project
+    currIdProp={currIdProp}
+    projectProp={projectProp}
+    unitsProp={unitsProp}
+    topicsProp={topicsProp}
+  />
+);
 
 export default ProjectById;
-
 
 export const getServerSideProps = async ({ params }) => {
   const { projectId } = params;

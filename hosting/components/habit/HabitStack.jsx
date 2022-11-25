@@ -8,8 +8,8 @@ const _HabitStack = ({ stackArray, provided, droppable }) => {
   return (
     <Box
       sx={{ maxHeight: 500, overflow: 'auto' }}
-      {...provided.droppableProps}
-      ref={provided.innerRef}
+      {...provided?.droppableProps}
+      ref={provided?.innerRef}
     >
       {stackArray.map((habit, index) => (
         <HabitCard
@@ -22,53 +22,33 @@ const _HabitStack = ({ stackArray, provided, droppable }) => {
           draggable={droppable}
         />
       ))}
-      {provided.placeholder}
+      {provided?.placeholder}
     </Box>
   );
 };
 
-const HabitStack = ({ id, stackHabitIDs, droppable = true }) => {
+const HabitStackWithDnd = ({ id, stackHabitIDs }) => {
   const { units } = useContext(UnitsContext);
   const stackArray = stackHabitIDs.map((habitID) => units[habitID]);
 
   return (
-    <>
-      {droppable ? (
-        <Droppable droppableId={id}>
-          {(provided) => (
-            <_HabitStack
-              stackArray={stackArray}
-              provided={provided}
-              droppable={droppable}
-            />
-          )}
-        </Droppable>
-      ) : (
-        <_HabitStack stackArray={stackArray} />
+    <Droppable droppableId={id}>
+      {(provided) => (
+        <_HabitStack
+          stackArray={stackArray}
+          provided={provided}
+          droppable={true}
+        />
       )}
-      {/* <Droppable droppableId={id}>
-        {(provided) => (
-          <Box
-            sx={{ maxHeight: 500, overflow: 'auto' }}
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-          >
-            {stackArray.map((habit, index) => (
-              <HabitCard
-                key={habit.id}
-                id={habit.id}
-                summary={habit.summary}
-                timeEst={habit.timeEst}
-                doneDates={habit.doneDates}
-                index={index}
-              />
-            ))}
-            {provided.placeholder}
-          </Box>
-        )}
-      </Droppable> */}
-    </>
+    </Droppable>
   );
 };
 
-export default HabitStack;
+const HabitStack = ({ id, stackHabitIDs }) => {
+  const { units } = useContext(UnitsContext);
+  const stackArray = stackHabitIDs.map((habitID) => units[habitID]);
+
+  return <_HabitStack stackArray={stackArray} />;
+};
+
+export { HabitStack, HabitStackWithDnd };

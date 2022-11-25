@@ -2,17 +2,26 @@ import * as dayjs from 'dayjs';
 
 export const DAYS = ['SU', 'M', 'T', 'W', 'TH', 'F', 'SA'];
 
-export function accumulateUnitMinutes(units, numDays) {
-  const today = new Date();
-  let cutoff = new Date();
-  cutoff.setDate(today.getDate() + numDays);
-  cutoff = dayjs(cutoff);
+/**
+ * Accumulate the number of minutes of each unit in {units}
+ * up to {numDays} after today.
+ * @param {*} units Units to accumulate
+ * @param {dayjs.Dayjs} start Start date
+ * @param {number} numDaysAfter Number of days after start
+ * @return {number} Accumulated number of minutes.
+ */
+export function accumulateUnitMinutes(units, start, numDaysAfter = 0) {
+  // let cutoff = new Date();
+  // cutoff.setDate(start.getDate() + numDaysAfter + 1);
+  // cutoff = dayjs(cutoff);
+
+  const cutoff = start.add(numDaysAfter + 1, 'day');
 
   let total = 0;
   for (const unit of units) {
     if (unit.dueDate) {
       const dueDate = dayjs.unix(unit.dueDate);
-      if (dueDate.isBefore(cutoff)) {
+      if (dueDate.isBefore(cutoff, 'day')) {
         const est = unit.timeEst ? unit.timeEst : 0;
         total += est;
       }
@@ -64,6 +73,9 @@ export function computeStreak(doneDates) {
   return streak;
 }
 
-// currDate: today -1
-// today -1, today -2, today -3
-// 1
+export function isOverdue(dueDate) {
+  if (dueDate === null) {
+    return false;
+  }
+  return dayjs.unix(dueDate).isBefore(dayjs(), 'day');
+}

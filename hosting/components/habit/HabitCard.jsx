@@ -17,14 +17,14 @@ const _HabitCard = ({ displayProps, provided }) => {
   return (
     <Box
       sx={{ padding: 1 }}
-      {...provided.draggableProps}
-      {...provided.dragHandleProps}
-      ref={provided.innerRef}
+      {...provided?.draggableProps}
+      {...provided?.dragHandleProps}
+      ref={provided?.innerRef}
       onClick={() => openUnit(displayProps.id)}
     >
       <Card>
         <CardContent>
-          {displayProps.summary}
+          <Typography>{displayProps.summary}</Typography>
           {displayProps.timeEst > 0 && (
             <Typography color="primary">{displayProps.timeEst} min</Typography>
           )}
@@ -34,7 +34,7 @@ const _HabitCard = ({ displayProps, provided }) => {
     </Box>
   );
 };
-// const HabitCard = (props) => {
+
 const HabitCard = ({ id, summary, timeEst, doneDates, index, draggable }) => {
   return (
     <>
@@ -48,7 +48,7 @@ const HabitCard = ({ id, summary, timeEst, doneDates, index, draggable }) => {
           )}
         </Draggable>
       ) : (
-        <_HabitCard displayProps={(id, summary, timeEst, doneDates)} />
+        <_HabitCard displayProps={{ id, summary, timeEst, doneDates }} />
       )}
     </>
   );

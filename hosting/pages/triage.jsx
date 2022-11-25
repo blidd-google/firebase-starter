@@ -149,7 +149,7 @@ const Review = ({ units, topics, updateUnits }) => {
             topics={topics}
             updateUnits={updateUnits}
           >
-            <UnitList filterFn={overdueFilter} units={units} />
+            <UnitList filters={[overdueFilter]} units={units} />
           </UnitDetailProvider>
         </Grid>
 
@@ -160,7 +160,7 @@ const Review = ({ units, topics, updateUnits }) => {
             topics={topics}
             updateUnits={updateUnits}
           >
-            <UnitList filterFn={blockedFilter} units={units} />
+            <UnitList filters={[blockedFilter]} units={units} />
           </UnitDetailProvider>
         </Grid>
       </Grid>
@@ -218,7 +218,7 @@ const Sketch = ({ units, topics, updateUnits }) => {
             topics={topics}
             updateUnits={updateUnits}
           >
-            <UnitList filterFn={backlogFilter} units={units} />
+            <UnitList filters={[backlogFilter]} units={units} />
           </UnitDetailProvider>
         </Grid>
 
@@ -229,7 +229,7 @@ const Sketch = ({ units, topics, updateUnits }) => {
             topics={topics}
             updateUnits={updateUnits}
           >
-            <UnitList filterFn={recentFilter} units={units} />
+            <UnitList filters={[recentFilter]} units={units} />
           </UnitDetailProvider>
         </Grid>
 
@@ -240,7 +240,7 @@ const Sketch = ({ units, topics, updateUnits }) => {
             topics={topics}
             updateUnits={updateUnits}
           >
-            <UnitList filterFn={todayFilter} units={units} />
+            <UnitList filters={[todayFilter]} units={units} />
           </UnitDetailProvider>
         </Grid>
       </Grid>
