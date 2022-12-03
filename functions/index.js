@@ -60,7 +60,44 @@ exports.removeParentFromChild = functions.firestore
       }
     });
 
-exports.onfinalizetest = functions.storage.object().onFinalize((object) => {
-  console.log('hello');
+exports.changeTopicNameToId = functions.https.onRequest(async (req, res) => {
+  const topicCollection = db.collection('topics');
+  const topicSnap = await topicCollection.get();
+  const topicNameToId = {};
+  topicSnap.forEach((doc) => {
+    const data = doc.data();
+    topicNameToId[data.name] = data.id;
+  });
+
+  const unitCollection = db.collection('units');
+  const unitSnap = await unitCollection.get();
+  unitSnap.forEach((doc) => {
+    const data = doc.data();
+
+    const docRef = unitCollection.doc(`${data.id}`);
+    if (!data.topic) {
+      return;
+    }
+    if (topicNameToId[data.topic]) {
+      docRef.set({topicId: topicNameToId[data.topic]}, {merge: true});
+    } else {
+      console.log(` topic ${data.topic} doesn't exist`);
+    }
+  });
+
+  res.send('success');
 });
 
+exports.deleteTopicName = functions.https.onRequest(async (req, res) => {
+  const unitCollection = db.collection('units');
+  const unitSnap = await unitCollection.get();
+  unitSnap.forEach((doc) => {
+    const data = doc.data();
+    delete data.topic;
+
+    const docRef = unitCollection.doc(`${data.id}`);
+    docRef.set(data);
+  });
+
+  res.send('success');
+});
