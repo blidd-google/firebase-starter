@@ -62,11 +62,9 @@ export async function getUnitsForProject(id) {
   const units = {};
   snapshot.forEach((doc) => {
     const data = doc.data();
-    console.log('data:', data);
     units[data.id] = data;
   });
 
-  console.log('units:', units);
   return units;
 }
 

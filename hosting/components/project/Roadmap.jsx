@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import { UnitDetailContext, UnitsContext } from '../../context';
 import { createUnit } from '../../lib/client/unit';
 import { statusFilterFactory } from '../../lib/filters';
-import { BACKLOG, INPROGRESS, TODO } from '../../lib/status';
+import { BACKLOG, INPROGRESS, TODO } from '../../lib/constants';
 import UnitList from '../UnitList';
 
 const LIST_TITLES = ['BACKLOG', 'ACTIVE', 'IN PROGRESS'];

@@ -8,6 +8,7 @@ import UnitDetailProvider from '../components/UnitDetail';
 import UnitList from '../components/UnitList';
 import { TopicsContext, UnitsContext } from '../context';
 import { useTopics, useUnits } from '../hooks';
+import { TODO } from '../lib/constants';
 import {
   applyFiltersToUnits,
   statusFilterFactory,
@@ -15,8 +16,7 @@ import {
 } from '../lib/filters';
 import { getAllStacks } from '../lib/server/habit';
 import { getAllTopics, getAllUnits } from '../lib/server/projects';
-import { TODO } from '../lib/status';
-import { accumulateUnitMinutes, DAYS, formatTimeEstimate } from '../lib/time';
+import { DAYS, formatTimeEstimate } from '../lib/time';
 
 export default function Agenda({ unitsProp, topicsProp, stacksProp }) {
   const { units, updateUnits } = useUnits(unitsProp);

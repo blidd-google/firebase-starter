@@ -24,6 +24,5 @@ export async function getAllStacks() {
 
 export async function getStack(id) {
   const snapshot = await db.doc(`stacks/${id}`).get();
-  console.log('\n\n\n\n\n\n\n', snapshot.data());
   return snapshot.data();
 }

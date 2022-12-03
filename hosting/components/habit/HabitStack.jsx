@@ -1,4 +1,5 @@
-import { Box } from '@mui/material';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { Box, Stack } from '@mui/material';
 import { useContext } from 'react';
 import { Droppable } from 'react-beautiful-dnd';
 import { UnitsContext } from '../../context';
@@ -6,7 +7,7 @@ import HabitCard from './HabitCard';
 
 const _HabitStack = ({ stackArray, provided, droppable }) => {
   return (
-    <Box
+    <Stack
       sx={{ maxHeight: 500, overflow: 'auto' }}
       {...provided?.droppableProps}
       ref={provided?.innerRef}
@@ -20,10 +21,11 @@ const _HabitStack = ({ stackArray, provided, droppable }) => {
           doneDates={habit.doneDates}
           index={index}
           draggable={droppable}
+          last={index === stackArray.length - 1}
         />
       ))}
       {provided?.placeholder}
-    </Box>
+    </Stack>
   );
 };
 
@@ -33,13 +35,15 @@ const HabitStackWithDnd = ({ id, stackHabitIDs }) => {
 
   return (
     <Droppable droppableId={id}>
-      {(provided) => (
-        <_HabitStack
-          stackArray={stackArray}
-          provided={provided}
-          droppable={true}
-        />
-      )}
+      {(provided, snapshot) => {
+        return (
+          <_HabitStack
+            stackArray={stackArray}
+            provided={provided}
+            droppable={true}
+          />
+        );
+      }}
     </Droppable>
   );
 };

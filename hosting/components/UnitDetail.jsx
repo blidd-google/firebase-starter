@@ -26,7 +26,7 @@ import * as dayjs from 'dayjs';
 import * as React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import { createUnit, deleteUnit, putUnit } from '../lib/client/unit';
-import { COMPLETE } from '../lib/status';
+import { COMPLETE, UNIT_TYPES } from '../lib/constants';
 
 import isToday from 'dayjs/plugin/isToday';
 import { TopicsContext, UnitDetailContext, UnitsContext } from '../context';
@@ -48,8 +48,6 @@ function getNextIdIfExists(units, id) {
   }
   return '';
 }
-
-const unitTypes = ['cue', 'habit', 'task', 'milestone'];
 
 export default function UnitDetailProvider({ children }) {
   const { units, updateUnits } = useContext(UnitsContext);
@@ -252,8 +250,6 @@ function UnitDetail({
     typeFilterFactory('milestone'),
   ]);
 
-  console.log('state', state);
-
   return (
     <Dialog open={true} onClose={handleClickCancel}>
       <UnitDetailHeader onClose={handleClickCancel}>Details</UnitDetailHeader>
@@ -271,7 +267,6 @@ function UnitDetail({
                     label={units[state.prevId].summary}
                     variant="outlined"
                     onClick={() => {
-                      // console.log('GO TO PREV');
                       openForm(state.prevId);
                     }}
                   />
@@ -311,7 +306,7 @@ function UnitDetail({
                 value={state.type}
                 onChange={handleChange}
               >
-                {unitTypes.map((type, index) => (
+                {UNIT_TYPES.map((type, index) => (
                   <MenuItem key={index} value={type}>
                     {type}
                   </MenuItem>

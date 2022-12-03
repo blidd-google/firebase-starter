@@ -18,7 +18,7 @@ import {
 import { HabitStackWithDnd } from '../../components/habit';
 import UnitDetailProvider from '../../components/UnitDetail';
 import UnitList from '../../components/UnitList';
-import { UnitsContext } from '../../context';
+import { StackDisplayContext, UnitsContext } from '../../context';
 import { useUnits } from '../../hooks';
 import { putStack } from '../../lib/client/stack';
 import { typeFilterFactory } from '../../lib/filters';
@@ -27,27 +27,38 @@ import { getAllUnits } from '../../lib/server/projects';
 
 function HabitStackDetail({ stackId, stackProp, unitsProp }) {
   const { units, updateUnits } = useUnits(unitsProp);
-
   const [stack, setStack] = useState(stackProp);
   // const [selected, setSelected] = useState([]);
   const [trashEnabled, setTrashEnabled] = useState(false);
+  const [arrowsEnabled, setArrowsEnabled] = useState(true);
 
   const router = useRouter();
 
   const onDragStart = () => {
     setTrashEnabled(true);
+    setArrowsEnabled(false);
+  };
+
+  const onDragUpdate = (update) => {
+    const { destination } = update;
+    if (destination !== null && destination.droppableId === 'delete') {
+      console.log('hovering over delete');
+    }
   };
 
   const onDragEnd = async (result) => {
-    setTrashEnabled(false);
     const { destination, source, draggableId } = result;
     if (!destination) {
+      setTrashEnabled(false);
+      setArrowsEnabled(true);
       return;
     }
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
     ) {
+      setTrashEnabled(false);
+      setArrowsEnabled(true);
       return;
     }
 
@@ -65,6 +76,8 @@ function HabitStackDetail({ stackId, stackProp, unitsProp }) {
       ...stack,
       habitIDs: reorderedIDs,
     };
+    setTrashEnabled(false);
+    setArrowsEnabled(true);
     setStack(reorderedStack);
     await putStack(reorderedStack);
   };
@@ -161,35 +174,61 @@ function HabitStackDetail({ stackId, stackProp, unitsProp }) {
           </Grid>
 
           <Grid item xs={6}>
-            <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
+            <DragDropContext
+              onDragEnd={onDragEnd}
+              onDragUpdate={onDragUpdate}
+              onDragStart={onDragStart}
+            >
               <UnitDetailProvider>
-                <HabitStackWithDnd
-                  id={stackId}
-                  stackHabitIDs={stack.habitIDs}
-                />
+                <StackDisplayContext.Provider value={arrowsEnabled}>
+                  <HabitStackWithDnd
+                    id={stackId}
+                    stackHabitIDs={stack.habitIDs}
+                  />
+                </StackDisplayContext.Provider>
               </UnitDetailProvider>
-
               <Droppable droppableId="delete">
-                {(provided) => (
-                  <Box
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      height: 100,
-                      margin: 1,
-                      border: 1,
-                      borderRadius: 1,
-                      borderColor: 'error.main',
-                    }}
-                  >
-                    {/* <DeleteIcon color="error" /> */}
-                    <Typography color="error">DELETE</Typography>
-                    {provided.placeholder}
-                  </Box>
-                )}
+                {(provided, snapshot) => {
+                  if (trashEnabled) {
+                    // N.B. We deliberately omit adding a behavior placeholder
+                    // to avoid undefined behavior for the contents of the
+                    // Droppable (e.g. the "DELETE" word)
+                    return (
+                      <Box
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          height: 100,
+                          margin: 1,
+                          border: snapshot.isDraggingOver ? 3 : 1,
+                          borderRadius: 1,
+                          borderColor: 'error.main',
+                        }}
+                      >
+                        <Typography color="error">DELETE</Typography>
+                      </Box>
+                    );
+                  } else {
+                    return (
+                      <Box
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          height: 100,
+                          margin: 1,
+                        }}
+                      >
+                        {provided.placeholder}
+                      </Box>
+                    );
+                  }
+                }}
               </Droppable>
             </DragDropContext>
           </Grid>

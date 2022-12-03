@@ -5,3 +5,5 @@ export const INPROGRESS = 2;
 export const COMPLETE = 3;
 
 export const statuses = [BACKLOG, TODO, INPROGRESS, COMPLETE];
+
+export const UNIT_TYPES = ['task', 'habit', 'milestone'];

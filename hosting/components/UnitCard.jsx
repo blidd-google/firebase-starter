@@ -17,7 +17,7 @@ export default function UnitCard({
 }) {
   const [border, setBorder] = useState(1);
   const topics = useContext(TopicsContext);
-  const topic = topics.find((t) => t.id === topicId);
+  const topic = topics?.find((t) => t.id === topicId);
 
   let dueDateLabel;
   if (isOverdue(dueDate)) {

@@ -21,11 +21,7 @@ const UnitList = ({ filters, onClick }) => {
   const openUnit = useContext(UnitDetailContext);
 
   const unitsFiltered = applyFiltersToUnits(units, filters);
-
-  // if no filter fn is specified, will return all units
-  // const unitsFilt = Object.values(units).filter(filterFn || (() => true));
   onClick = openUnit || onClick;
-
   return (
     <>
       <Grid container spacing={2} sx={{ maxHeight: 500, overflow: 'auto' }}>

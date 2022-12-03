@@ -6,7 +6,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import Head from 'next/head';
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import { useState } from 'react';
 import Layout from '../components/layout';
 import createEmotionCache from '../lib/createEmotionCache';
 import theme from '../lib/theme';
@@ -21,6 +20,7 @@ export default function MyApp(props) {
     <CacheProvider value={emotionCache}>
       <Head>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
+        <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.css" />
       </Head>
       <ThemeProvider theme={theme}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>

@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { getAllUnitsForProject } from '../lib/client/unit';
-import _ from 'lodash';
+import { TopicsContext, UnitsContext } from '../context';
+import { applyFiltersToUnits, typeFilterFactory } from '../lib/filters';
+import { UNIT_TYPES } from '../lib/constants';
+import { buildClasses } from '../components/classes';
 
 export const useUnits = (unitsProp, projectIdProp = '') => {
   const [units, setUnits] = useState(unitsProp);
@@ -49,6 +52,50 @@ export const useTopics = (topicsSSR, projectIdSSR = '') => {
   return { topics };
 };
 
-export const useStacks = (stacksProp) => {
-  const [stacks, setStacks] = useState();
+// export const useStacks = (stacksProp) => {
+//   const [stacks, setStacks] = useState();
+// };
+
+export const useClassifiers = (classifierProp) => {
+  const [classifierId, setClassifierId] = useState(classifierProp);
+  const { units } = useContext(UnitsContext);
+  const topics = useContext(TopicsContext);
+
+  const classifiers = [
+    {
+      id: 'milestone',
+      name: 'Milestone',
+      classes: applyFiltersToUnits(units, [
+        typeFilterFactory('milestone'),
+      ]).sort((a, b) => a.summary.localeCompare(b.summary)),
+    },
+    {
+      id: 'topicId',
+      name: 'Topic',
+      classes: topics,
+    },
+    {
+      id: 'type',
+      name: 'Type',
+      classes: UNIT_TYPES.map((type) => ({ id: type, name: type })),
+    },
+  ];
+
+  return {
+    classifier: classifiers.find((c) => c.id === classifierId),
+    allClassifiers: classifiers,
+    setClassifierId,
+  };
+};
+
+export const useClasses = (classifierProp) => {
+  const [classifierId, setClassifierId] = useState(classifierProp);
+  const { units } = useContext(UnitsContext);
+  const topics = useContext(TopicsContext);
+
+  return {
+    classes: buildClasses(classifierId, units, topics),
+    classifierId,
+    setClassifierId,
+  };
 };

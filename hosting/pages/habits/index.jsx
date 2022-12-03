@@ -21,17 +21,21 @@ import { getAllTopics, getAllUnits } from '../../lib/server/projects';
 import { DAYS } from '../../lib/time';
 import dayjs from 'dayjs';
 import { HabitStackWithDnd } from '../../components/habit';
-import { TopicsContext, UnitsContext } from '../../context';
+import {
+  StackDisplayContext,
+  TopicsContext,
+  UnitsContext,
+} from '../../context';
 import { useUnits } from '../../hooks';
 import { useRouter } from 'next/router';
 
 export const Habits = ({ unitsProp, stacksProp, topicsProp }) => {
+  const { units, updateUnits } = useUnits(unitsProp);
   const [stacks, setStacks] = useState(stacksProp);
   const [schedule, setSchedule] = useState(DAYS[dayjs().day()]);
+  const [arrowsEnabled, setArrowsEnabled] = useState(true);
 
   const router = useRouter();
-
-  const { units, updateUnits } = useUnits(unitsProp);
 
   const stacksFiltered = Object.values(stacks).filter((stack) => {
     if (schedule === 'ALL') {
@@ -43,15 +47,21 @@ export const Habits = ({ unitsProp, stacksProp, topicsProp }) => {
     return stack.schedule.includes(schedule) || stack.schedule.includes('ALL');
   });
 
+  const onDragStart = () => {
+    setArrowsEnabled(false);
+  };
+
   const onDragEnd = async (result) => {
     const { destination, source, draggableId } = result;
     if (!destination) {
+      setArrowsEnabled(true);
       return;
     }
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
     ) {
+      setArrowsEnabled(true);
       return;
     }
     const stack = stacks[source.droppableId];
@@ -66,6 +76,7 @@ export const Habits = ({ unitsProp, stacksProp, topicsProp }) => {
       ...stacks,
       [stack.id]: reorderedStack,
     });
+    setArrowsEnabled(true);
     await putStack(reorderedStack);
   };
 
@@ -112,8 +123,13 @@ export const Habits = ({ unitsProp, stacksProp, topicsProp }) => {
           <Grid container>
             {stacksFiltered.map(({ id }) => (
               <Grid item key={id} xs={4}>
-                <DragDropContext onDragEnd={onDragEnd}>
-                  <HabitStackContainer id={id} stacks={stacks} />
+                <DragDropContext
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                >
+                  <StackDisplayContext.Provider value={arrowsEnabled}>
+                    <HabitStackContainer id={id} stacks={stacks} />
+                  </StackDisplayContext.Provider>
                 </DragDropContext>
               </Grid>
             ))}

@@ -17,7 +17,9 @@ const theme = createTheme({
       default: '#fff',
       secondary: '#f7f7f7',
     },
-
+  },
+  transitions: {
+    create: () => 'none',
   },
 });
 
